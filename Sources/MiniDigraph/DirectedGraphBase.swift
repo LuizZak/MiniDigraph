@@ -1,18 +1,18 @@
 /// A base class for directed graph class implementations in this module.
 public class DirectedGraphBase<Node, Edge: DirectedGraphBaseEdgeType>: MutableDirectedGraphType where Edge.Node == Node {
     /// A list of all nodes contained in this graph
-    internal(set) public var nodes: [Node] = []
+    internal(set) public var nodes: Set<Node> = []
     /// A list of all edges contained in this graph
-    internal(set) public var edges: [Edge] = []
+    internal(set) public var edges: Set<Edge> = []
 
     /// Initializes an empty directed graph.
     public required convenience init() {
         self.init(nodes: [], edges: [])
     }
 
-    public init(nodes: [Node], edges: [Edge]) {
-        self.nodes = nodes
-        self.edges = edges
+    public init(nodes: some Sequence<Node>, edges: some Sequence<Edge>) {
+        self.nodes = Set(nodes)
+        self.edges = Set(edges)
     }
 
     @inlinable
@@ -30,13 +30,6 @@ public class DirectedGraphBase<Node, Edge: DirectedGraphBaseEdgeType>: MutableDi
         }
 
         return graph
-    }
-
-    /// Returns `true` iff two node references represent the same underlying node
-    /// in this graph.
-    @inlinable
-    public func areNodesEqual(_ node1: Node, _ node2: Node) -> Bool {
-        node1 === node2
     }
 
     /// Returns whether a given graph node exists in this graph.
@@ -60,14 +53,14 @@ public class DirectedGraphBase<Node, Edge: DirectedGraphBaseEdgeType>: MutableDi
     /// Returns all outgoing edges for a given graph node.
     ///
     /// A reference equality test (===) is used to determine graph node equality.
-    public func edges(from node: Node) -> [Edge] {
+    public func edges(from node: Node) -> Set<Edge> {
         edges.filter { $0.start === node }
     }
 
     /// Returns all ingoing edges for a given graph node.
     ///
     /// A reference equality test (===) is used to determine graph node equality.
-    public func edges(towards node: Node) -> [Edge] {
+    public func edges(towards node: Node) -> Set<Edge> {
         edges.filter { $0.end === node }
     }
 
@@ -79,28 +72,32 @@ public class DirectedGraphBase<Node, Edge: DirectedGraphBaseEdgeType>: MutableDi
         edges.first { $0.start === start && $0.end === end }
     }
 
-    public func nodesConnected(towards node: Node) -> [Node] {
-        edges.compactMap { edge in
+    public func nodesConnected(towards node: Node) -> Set<Node> {
+        let nodes = edges.compactMap { edge in
             if edge.end == node {
                 edge.start
             } else {
                 nil
             }
         }
+
+        return Set(nodes)
     }
 
-    public func nodesConnected(from node: Node) -> [Node] {
-        edges.compactMap { edge in
+    public func nodesConnected(from node: Node) -> Set<Node> {
+        let nodes = edges.compactMap { edge in
             if edge.start == node {
                 edge.end
             } else {
                 nil
             }
         }
+
+        return Set(nodes)
     }
 
-    public func allNodesConnected(to node: Node) -> [Node] {
-        edges.compactMap { edge in
+    public func allNodesConnected(to node: Node) -> Set<Node> {
+        let nodes = edges.compactMap { edge in
             if edge.start == node {
                 edge.end
             } else if edge.end == node {
@@ -109,6 +106,8 @@ public class DirectedGraphBase<Node, Edge: DirectedGraphBaseEdgeType>: MutableDi
                 nil
             }
         }
+
+        return Set(nodes)
     }
 
     // MARK: - Internals
@@ -126,7 +125,7 @@ public class DirectedGraphBase<Node, Edge: DirectedGraphBaseEdgeType>: MutableDi
             "Node \(node) already exists in this graph"
         )
 
-        nodes.append(node)
+        nodes.insert(node)
     }
 
     /// Adds a sequence of nodes to this graph.
@@ -152,12 +151,12 @@ public class DirectedGraphBase<Node, Edge: DirectedGraphBaseEdgeType>: MutableDi
 
     /// Adds a given edge to this graph.
     func addEdge(_ edge: Edge) {
-        edges.append(edge)
+        edges.insert(edge)
     }
 
     @discardableResult
     private func _uncheckedRemoveNode(_ node: Node) -> Bool {
-        if let index = nodes.firstIndex(where: { areNodesEqual($0, node) }) {
+        if let index = nodes.firstIndex(where: { $0 == node }) {
             nodes.remove(at: index)
             return true
         }
@@ -166,7 +165,7 @@ public class DirectedGraphBase<Node, Edge: DirectedGraphBaseEdgeType>: MutableDi
 
     @discardableResult
     private func _uncheckedRemoveEdge(_ edge: Edge) -> Bool {
-        if let index = edges.firstIndex(where: { areEdgesEqual($0, edge) }) {
+        if let index = edges.firstIndex(where: { $0 == edge }) {
             edges.remove(at: index)
             return true
         }
@@ -183,7 +182,7 @@ public class DirectedGraphBase<Node, Edge: DirectedGraphBaseEdgeType>: MutableDi
     /// Removes an edge between two nodes from this graph.
     public func removeEdge(from start: Node, to end: Node) {
         func predicate(_ edge: Edge) -> Bool {
-            areNodesEqual(edge.start, start) && self.areNodesEqual(edge.end, end)
+            edge.start == start && edge.end == end
         }
 
         var found = false
@@ -214,89 +213,6 @@ public class DirectedGraphBase<Node, Edge: DirectedGraphBaseEdgeType>: MutableDi
         for edge in edgesToRemove {
             _uncheckedRemoveEdge(edge)
         }
-    }
-
-    /// Removes a given sequence of nodes from this graph.
-    public func removeNodes<S: Sequence>(_ nodesToRemove: S) where S.Element == Node {
-        for node in nodesToRemove {
-            removeEdges(allEdges(for: node))
-            removeNode(node)
-        }
-    }
-
-    /// Removes the entry edges from a given node.
-    @discardableResult
-    func removeEntryEdges(towards node: Node) -> [Edge] {
-        let connections = edges(towards: node)
-        removeEdges(connections)
-        return connections
-    }
-
-    /// Removes the exit edges from a given node.
-    @discardableResult
-    func removeExitEdges(from node: Node) -> [Edge] {
-        let connections = edges(from: node)
-        removeEdges(connections)
-        return connections
-    }
-
-    /// Moves the entry edges from a given node to a target node.
-    ///
-    /// The existing entry edges for `other` are kept as is.
-    ///
-    /// The return list contains the new edges that where created.
-    @discardableResult
-    func redirectEntries(for node: Node, to other: Node) -> [Edge] {
-        var result: [Edge] = []
-
-        for connection in removeEntryEdges(towards: node) {
-            guard !areConnected(start: connection.start, end: other) else {
-                continue
-            }
-
-            let edge = addEdge(from: connection.start, to: other)
-
-            result.append(edge)
-        }
-
-        return result
-    }
-
-    /// Moves the exit edges from a given node to a target node.
-    ///
-    /// The existing exit edges for `other` are kept as is.
-    ///
-    /// The return list contains the new edges that where created.
-    @discardableResult
-    func redirectExits(for node: Node, to other: Node) -> [Edge] {
-        var result: [Edge] = []
-
-        for connection in removeExitEdges(from: node) {
-            guard !areConnected(start: other, end: connection.end) else {
-                continue
-            }
-
-            let edge = addEdge(from: other, to: connection.end)
-
-            result.append(edge)
-        }
-
-        return result
-    }
-
-    /// Prepends a node before a suffix node, redirecting the entries to the
-    /// suffix node to the prefix node, and adding an edge from the prefix to the
-    /// suffix node.
-    func prepend(_ node: Node, before next: Node) {
-        if !containsNode(node) {
-            addNode(node)
-        } else {
-            let fromEdges = edges(from: node)
-            removeEdges(fromEdges)
-        }
-
-        redirectEntries(for: next, to: node)
-        addEdge(from: node, to: next)
     }
 }
 

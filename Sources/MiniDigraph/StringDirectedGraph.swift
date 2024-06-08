@@ -29,7 +29,7 @@ final class StringDirectedGraph: DirectedGraphBase<StringDirectedGraph.Node, Str
     override func addEdge(from start: Node, to end: Node) -> Edge {
         let edge = Edge(start: start, end: end)
 
-        edges.append(edge)
+        edges.insert(edge)
 
         return edge
     }

@@ -30,7 +30,7 @@ public final class GenericDirectedGraph<T>: DirectedGraphBase<GenericDirectedGra
     public override func addEdge(from start: Node, to end: Node) -> Edge {
         let edge = Edge(start: start, end: end)
 
-        edges.append(edge)
+        edges.insert(edge)
 
         return edge
     }

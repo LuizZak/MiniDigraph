@@ -3,31 +3,17 @@ import XCTest
 @testable import MiniDigraph
 
 class DirectedGraphTests: XCTestCase {
-    func testAreEdgesEqual() {
-        let sut = makeSut()
-        let n1 = sut.addNode(0)
-        let n2 = sut.addNode(1)
-        let n3 = sut.addNode(2)
-        let e1 = sut.addEdge(from: n1, to: n2)
-        let e2 = sut.addEdge(from: n1, to: n3)
-
-        XCTAssertTrue(sut.areEdgesEqual(e1, e1))
-        XCTAssertTrue(sut.areEdgesEqual(e2, e2))
-        XCTAssertFalse(sut.areEdgesEqual(e1, e2))
-        XCTAssertFalse(sut.areEdgesEqual(e2, e1))
-    }
-
     func testAllEdgesForNode() {
         let sut = makeSut()
         let n1 = sut.addNode(0)
         let n2 = sut.addNode(1)
         let n3 = sut.addNode(2)
-        let e1 = sut.addEdge(from: n1, to: n2)
-        let e2 = sut.addEdge(from: n1, to: n3)
+        let e1 = sut.addEdge(n1 => n2)
+        let e2 = sut.addEdge(n1 => n3)
 
         let result = sut.allEdges(for: n1)
 
-        XCTAssertEqual(result, [e1, e2])
+        assertEqualUnordered(result, [e1, e2])
     }
 
     func testNodesConnectedFromNode() {
@@ -35,12 +21,12 @@ class DirectedGraphTests: XCTestCase {
         let n1 = sut.addNode(0)
         let n2 = sut.addNode(1)
         let n3 = sut.addNode(2)
-        sut.addEdge(from: n1, to: n2)
-        sut.addEdge(from: n1, to: n3)
+        sut.addEdge(n1 => n2)
+        sut.addEdge(n1 => n3)
 
         let result = sut.nodesConnected(from: n1)
 
-        XCTAssertEqual(result, [n2, n3])
+        assertEqualUnordered(result, [n2, n3])
     }
 
     func testNodesConnectedTowardsNode() {
@@ -48,12 +34,12 @@ class DirectedGraphTests: XCTestCase {
         let n1 = sut.addNode(0)
         let n2 = sut.addNode(1)
         let n3 = sut.addNode(2)
-        sut.addEdge(from: n1, to: n2)
-        sut.addEdge(from: n2, to: n3)
+        sut.addEdge(n1 => n2)
+        sut.addEdge(n2 => n3)
 
         let result = sut.nodesConnected(towards: n2)
 
-        XCTAssertEqual(result, [n1])
+        assertEqualUnordered(result, [n1])
     }
 
     func testAllNodesConnectedToNode() {
@@ -61,12 +47,12 @@ class DirectedGraphTests: XCTestCase {
         let n1 = sut.addNode(0)
         let n2 = sut.addNode(1)
         let n3 = sut.addNode(2)
-        sut.addEdge(from: n1, to: n2)
-        sut.addEdge(from: n2, to: n3)
+        sut.addEdge(n1 => n2)
+        sut.addEdge(n2 => n3)
 
         let result = sut.allNodesConnected(to: n2)
 
-        XCTAssertEqual(result, [n1, n3])
+        assertEqualUnordered(result, [n1, n3])
     }
 
     func testDepthFirstVisit() {
@@ -77,11 +63,11 @@ class DirectedGraphTests: XCTestCase {
         let n4 = sut.addNode(4)
         let n5 = sut.addNode(5)
         let n6 = sut.addNode(6)
-        let e0 = sut.addEdge(from: n1, to: n2)
-        let e1 = sut.addEdge(from: n2, to: n3)
-        let e2 = sut.addEdge(from: n2, to: n4)
-        let e3 = sut.addEdge(from: n4, to: n5)
-        let e4 = sut.addEdge(from: n1, to: n6)
+        let e0 = sut.addEdge(n1 => n2)
+        let e1 = sut.addEdge(n2 => n3)
+        let e2 = sut.addEdge(n2 => n4)
+        let e3 = sut.addEdge(n4 => n5)
+        let e4 = sut.addEdge(n1 => n6)
 
         assertVisit(
             sut,
@@ -89,11 +75,11 @@ class DirectedGraphTests: XCTestCase {
             visitMethod: sut.depthFirstVisit,
             expected: [
                 .start(n1),
-                n1 => (e0, n2),
-                n1 => (e0, n2) => (e1, n3),
-                n1 => (e0, n2) => (e2, n4),
-                n1 => (e0, n2) => (e2, n4) => (e3, n5),
-                n1 => (e4, n6),
+                n1 ~~> (e0, n2),
+                n1 ~~> (e0, n2) ~~> (e1, n3),
+                n1 ~~> (e0, n2) ~~> (e2, n4),
+                n1 ~~> (e0, n2) ~~> (e2, n4) ~~> (e3, n5),
+                n1 ~~> (e4, n6),
             ]
         )
     }
@@ -106,11 +92,11 @@ class DirectedGraphTests: XCTestCase {
         let n4 = sut.addNode(4)
         let n5 = sut.addNode(5)
         let n6 = sut.addNode(6)
-        let e0 = sut.addEdge(from: n1, to: n2)
-        let e1 = sut.addEdge(from: n2, to: n3)
-        let e2 = sut.addEdge(from: n2, to: n4)
-        let e3 = sut.addEdge(from: n4, to: n5)
-        let e4 = sut.addEdge(from: n1, to: n6)
+        let e0 = sut.addEdge(n1 => n2)
+        let e1 = sut.addEdge(n2 => n3)
+        let e2 = sut.addEdge(n2 => n4)
+        let e3 = sut.addEdge(n4 => n5)
+        let e4 = sut.addEdge(n1 => n6)
 
         assertVisit(
             sut,
@@ -118,11 +104,11 @@ class DirectedGraphTests: XCTestCase {
             visitMethod: sut.breadthFirstVisit,
             expected: [
                 .start(n1),
-                n1 => (e0, n2),
-                n1 => (e4, n6),
-                n1 => (e0, n2) => (e1, n3),
-                n1 => (e0, n2) => (e2, n4),
-                n1 => (e0, n2) => (e2, n4) => (e3, n5),
+                n1 ~~> (e0, n2),
+                n1 ~~> (e4, n6),
+                n1 ~~> (e0, n2) ~~> (e1, n3),
+                n1 ~~> (e0, n2) ~~> (e2, n4),
+                n1 ~~> (e0, n2) ~~> (e2, n4) ~~> (e3, n5),
             ]
         )
     }
@@ -134,10 +120,11 @@ class DirectedGraphTests: XCTestCase {
         let n3 = sut.addNode(3)
         let n4 = sut.addNode(4)
         let n5 = sut.addNode(5)
-        sut.addEdge(from: n1, to: n2)
-        sut.addEdge(from: n2, to: n3)
-        sut.addEdge(from: n2, to: n4)
-        sut.addEdge(from: n4, to: n5)
+        sut.addEdge(n1 => n2)
+        sut.addEdge(n2 => n3)
+        sut.addEdge(n2 => n4)
+        sut.addEdge(n3 => n4)
+        sut.addEdge(n4 => n5)
 
         let result = sut.topologicalSorted()
 
@@ -151,9 +138,9 @@ class DirectedGraphTests: XCTestCase {
         let n1 = sut.addNode(1)
         let n2 = sut.addNode(2)
         let n3 = sut.addNode(3)
-        sut.addEdge(from: n1, to: n2)
-        sut.addEdge(from: n2, to: n3)
-        sut.addEdge(from: n3, to: n1)
+        sut.addEdge(n1 => n2)
+        sut.addEdge(n2 => n3)
+        sut.addEdge(n3 => n1)
 
         let result = sut.topologicalSorted()
 
@@ -191,7 +178,7 @@ class DirectedGraphTests: XCTestCase {
         let sut = makeSut()
         let node1 = sut.addNode(1)
         let node2 = sut.addNode(2)
-        sut.addEdge(from: node1, to: node2)
+        sut.addEdge(node1 => node2)
 
         let result = sut.stronglyConnectedComponents()
 
@@ -216,7 +203,7 @@ class DirectedGraphTests: XCTestCase {
         let node3 = sut.addNode(3)
         let node4 = sut.addNode(4)
         sut.addMutualEdges(from: node1, to: node2)
-        sut.addEdge(from: node1, to: node3)
+        sut.addEdge(node1 => node3)
         sut.addMutualEdges(from: node3, to: node4)
 
         let result = sut.stronglyConnectedComponents()
@@ -230,8 +217,8 @@ class DirectedGraphTests: XCTestCase {
         let node2 = sut.addNode(2)
         let node3 = sut.addNode(3)
         let node4 = sut.addNode(4)
-        sut.addEdge(from: node1, to: node2)
-        sut.addEdge(from: node3, to: node1)
+        sut.addEdge(node1 => node2)
+        sut.addEdge(node3 => node1)
 
         let result = sut.connectedComponents()
 
@@ -247,9 +234,9 @@ class DirectedGraphTests: XCTestCase {
         let node2 = sut.addNode(2)
         let node3 = sut.addNode(3)
         let node4 = sut.addNode(4)
-        sut.addEdge(from: node1, to: node2)
-        sut.addEdge(from: node2, to: node3)
-        sut.addEdge(from: node3, to: node2)
+        sut.addEdge(node1 => node2)
+        sut.addEdge(node2 => node3)
+        sut.addEdge(node3 => node2)
 
         let result = sut.connectedComponents()
 
@@ -303,8 +290,8 @@ class DirectedGraphTests: XCTestCase {
             switch visit {
             case .start(let node):
                 return _formatNode(node)
-            case .edge(let e, let from, let towards):
-                return "\(_formatVisit(from)) -(edge index: \(e.index))> \(_formatNode(towards))"
+            case .edge(_, let from, let towards):
+                return "\(_formatVisit(from)) -> \(_formatNode(towards))"
             }
         }
 
@@ -320,128 +307,16 @@ class DirectedGraphTests: XCTestCase {
             """
         }
 
-        if expected.count != visits.count {
-            if visits.isEmpty {
-                XCTFail(
-                    "Expected \(expected.count) visits, found \(visits.count)",
-                    line: line
-                )
-            } else {
-                XCTFail(
-                    """
-                    Expected \(expected.count) visits, found \(visits.count):
-
-                    \(_formatVisits(visits))
-                    """,
-                    line: line
-                )
-            }
-            return
-        }
-
-        for (i, (exp, vis)) in zip(expected, visits).enumerated() {
-            if exp == vis {
-                continue
-            }
-
-            XCTFail(
-                """
-                Failed to match expected visits starting at index \(i).
-                Expected visit order to be:
-                
-                \(_formatVisits(expected))
-
-                but found
-
-                \(_formatVisits(visits))
-                """,
-                line: line
-            )
-            return
-        }
-    }
-}
-
-// Convenience operators for generating visit elements
-infix operator => : MultiplicationPrecedence
-
-// Creates a visit from `lhs` to `rhs.node` through `rhs.edge`.
-func => <E, N>(lhs: DirectedGraphVisitElement<E, N>, rhs: (edge: E, node: N)) -> DirectedGraphVisitElement<E, N> {
-    .edge(rhs.edge, from: lhs, towards: rhs.node)
-}
-
-// Creates a visit from `.root(lhs)` to `rhs.node` through `rhs.edge`.
-func => <E, N>(lhs: N, rhs: (edge: E, node: N)) -> DirectedGraphVisitElement<E, N> {
-    .edge(rhs.edge, from: .start(lhs), towards: rhs.node)
-}
-
-private class TestGraph {
-    private(set) var nodes: [Node] = []
-    private(set) var edges: [Edge] = []
-
-    required init() {
-
-    }
-
-    func addNode(_ value: Int) -> Node {
-        let node = Node(value: value)
-        nodes.append(node)
-        return node
-    }
-
-    @discardableResult
-    func addEdge(from start: Node, to end: Node) -> Edge {
-        let edge = Edge(start: start, end: end, index: edges.count)
-        edges.append(edge)
-        return edge
-    }
-
-    @discardableResult
-    func addMutualEdges(from start: Node, to end: Node) -> [Edge] {
-        return [
-            addEdge(from: start, to: end),
-            addEdge(from: end, to: start),
-        ]
-    }
-
-    class Node: DirectedGraphNode, CustomDebugStringConvertible {
-        var value: Int
-
-        var debugDescription: String {
-            "node #\(value)"
-        }
-
-        init(value: Int) {
-            self.value = value
-        }
-    }
-
-    class Edge: DirectedGraphEdge, CustomDebugStringConvertible {
-        var start: Node
-        var end: Node
-        var index: Int
-
-        var debugDescription: String {
-            "(edge index: \(index))"
-        }
-
-        init(start: TestGraph.Node, end: TestGraph.Node, index: Int) {
-            self.start = start
-            self.end = end
-            self.index = index
-        }
+        assertEqualUnordered(
+            expected,
+            visits,
+            file: #file,
+            line: line
+        )
     }
 }
 
 extension TestGraph: DirectedGraphType {
-    func subgraph(of nodes: some Sequence<Node>) -> Self {
-        fatalError("Subgraph not implemented on TestGraph")
-    }
-
-    func areNodesEqual(_ node1: Node, _ node2: Node) -> Bool {
-        node1 == node2
-    }
-
     func startNode(for edge: Edge) -> Node {
         edge.start
     }
@@ -450,11 +325,11 @@ extension TestGraph: DirectedGraphType {
         edge.end
     }
 
-    func edges(from node: Node) -> [Edge] {
+    func edges(from node: Node) -> Set<Edge> {
         edges.filter { $0.start == node }
     }
 
-    func edges(towards node: Node) -> [Edge] {
+    func edges(towards node: Node) -> Set<Edge> {
         edges.filter { $0.end == node }
     }
 
