@@ -14,19 +14,29 @@ public protocol DirectedGraphType {
     // MARK: Required conformances
 
     /// Returns the starting edge for a given node on this graph.
+    ///
+    /// - precondition: `edge` is a valid edge within this graph.
     func startNode(for edge: Edge) -> Node
 
     /// Returns the ending edge for a given node on this graph.
+    ///
+    /// - precondition: `edge` is a valid edge within this graph.
     func endNode(for edge: Edge) -> Node
 
     /// Returns all outgoing edges for a given directed graph node.
+    ///
+    /// - precondition: `node` is a valid node within this graph.
     func edges(from node: Node) -> Set<Edge>
 
     /// Returns all ingoing edges for a given directed graph node.
+    ///
+    /// - precondition: `node` is a valid node within this graph.
     func edges(towards node: Node) -> Set<Edge>
 
     /// Returns an existing edge between two nodes, or `nil`, if no edges between
     /// them currently exist.
+    ///
+    /// - precondition: `start` and `end` are valid nodes within this graph.
     func edge(from start: Node, to end: Node) -> Edge?
 
     // MARK: Optional conformances
@@ -35,36 +45,54 @@ public protocol DirectedGraphType {
     func containsNode(_ node: Node) -> Bool
 
     /// Returns all ingoing and outgoing edges for a given directed graph node.
+    ///
+    /// - precondition: `node` is a valid node within this graph.
     func allEdges(for node: Node) -> Set<Edge>
 
     /// Returns `true` if the two given nodes are connected with an edge.
+    ///
+    /// - precondition: `start` and `end` are valid nodes within this graph.
     func areConnected(start: Node, end: Node) -> Bool
 
     /// Returns all graph nodes that are connected from a given directed graph
     /// node.
+    ///
+    /// - precondition: `node` is a valid node within this graph.
     func nodesConnected(from node: Node) -> Set<Node>
 
     /// Returns all graph nodes that are connected towards a given directed graph
     /// node.
+    ///
+    /// - precondition: `node` is a valid node within this graph.
     func nodesConnected(towards node: Node) -> Set<Node>
 
     /// Returns all graph nodes that are connected towards and from the given
     /// graph node.
+    ///
+    /// - precondition: `node` is a valid node within this graph.
     func allNodesConnected(to node: Node) -> Set<Node>
 
     /// Performs a depth-first visiting of this directed graph, finishing once
-    /// all nodes are visited, or when `visitor` returns false.
+    /// all nodes are visited, or when `visitor` returns false, starting at a
+    /// given node.
     ///
     /// In case a cycle is found, the previously-visited nodes are skipped.
+    ///
+    /// - precondition: `node` is a valid node within this graph.
     func depthFirstVisit(start: Node, _ visitor: (VisitElement) -> Bool)
 
     /// Performs a breadth-first visiting of this directed graph, finishing once
-    /// all nodes are visited, or when `visitor` returns false.
+    /// all nodes are visited, or when `visitor` returns false, starting at a
+    /// given node
     ///
     /// In case a cycle is found, the previously-visited nodes are skipped.
+    ///
+    /// - precondition: `node` is a valid node within this graph.
     func breadthFirstVisit(start: Node, _ visitor: (VisitElement) -> Bool)
 
     /// Returns `true` if the directed graph has a path between the two given nodes.
+    ///
+    /// - precondition: `start` and `end` are valid nodes within this graph.
     func hasPath(from start: Node, to end: Node) -> Bool
 
     /// Returns the shortest number of edges that need to be traversed to get from
@@ -77,6 +105,7 @@ public protocol DirectedGraphType {
     ///
     /// - complexity: O(n), where _n_ is the number of nodes and edges in this
     /// graph.
+    /// - precondition: `start` and `end` are valid nodes within this graph.
     @inlinable
     func shortestDistance(from start: Node, to end: Node) -> Int?
 
@@ -89,6 +118,7 @@ public protocol DirectedGraphType {
     ///
     /// - complexity: O(n), where _n_ is the number of nodes and edges in this
     /// graph.
+    /// - precondition: `start` and `end` are valid nodes within this graph.
     @inlinable
     func shortestPath(from start: Node, to end: Node) -> [Node]?
 
@@ -133,6 +163,32 @@ public protocol DirectedGraphType {
     ///
     /// - precondition: `start` is contained within this graph.
     func findCycles(from start: Node) -> [[Node]]
+
+    /// Returns a list which represents the [topologically sorted] nodes of this
+    /// graph. The order of the sorted elements is not guaranteed.
+    ///
+    /// Returns nil, in case it cannot be topologically sorted, when e.g. any
+    /// cycles are found.
+    ///
+    /// - Returns: A list of the nodes from this graph, topologically sorted, or
+    /// `nil`, in case it cannot be sorted.
+    ///
+    /// [topologically sorted]: https://en.wikipedia.org/wiki/Topological_sorting
+    func topologicalSorted() -> [Node]?
+
+    /// Returns a list which represents the [topologically sorted] nodes of this
+    /// graph. If two or more nodes can be placed in the same position in the
+    /// resulting array, an ordering callback `areInIncreasingOrder` is used to
+    /// alter the order of the results.
+    ///
+    /// Returns nil, in case it cannot be topologically sorted, when e.g. any
+    /// cycles are found.
+    ///
+    /// - Returns: A list of the nodes from this graph, topologically sorted, or
+    /// `nil`, in case it cannot be sorted.
+    ///
+    /// [topologically sorted]: https://en.wikipedia.org/wiki/Topological_sorting
+    func topologicalSorted(breakTiesWith areInIncreasingOrder: (Node, Node) -> Bool) -> [Node]?
 }
 
 /// Element for a graph visiting operation.
@@ -413,9 +469,7 @@ public extension DirectedGraphType {
 
         return result
     }
-}
 
-public extension DirectedGraphType {
     /// Returns a list which represents the [topologically sorted] nodes of this
     /// graph.
     ///
@@ -459,6 +513,74 @@ public extension DirectedGraphType {
         }
 
         return list
+    }
+
+    /// Returns a list which represents the [topologically sorted] nodes of this
+    /// graph. If two or more nodes can be placed in the same position in the
+    /// resulting array, an ordering callback `areInIncreasingOrder` is used to
+    /// alter the order of the results.
+    ///
+    /// Returns nil, in case it cannot be topologically sorted, when e.g. any
+    /// cycles are found.
+    ///
+    /// - Returns: A list of the nodes from this graph, topologically sorted, or
+    /// `nil`, in case it cannot be sorted.
+    ///
+    /// [topologically sorted]: https://en.wikipedia.org/wiki/Topological_sorting
+    @inlinable
+    func topologicalSorted(breakTiesWith areInIncreasingOrder: (Node, Node) -> Bool) -> [Node]? {
+        var result: [Node] = []
+        var visited: Set<Node> = []
+        var edgesRemaining: Set<Edge> = self.edges
+        var nextNodes: [Node] = []
+
+        func queueNode(_ node: Node) {
+            if nextNodes.isEmpty {
+                nextNodes.append(node)
+            } else {
+                let index = nextNodes.firstIndex { current in
+                    areInIncreasingOrder(node, current)
+                }
+                nextNodes.insert(node, at: index ?? nextNodes.endIndex)
+            }
+        }
+
+        func checkNode(_ node: Node) {
+            let towards = edgesRemaining.filter({ endNode(for: $0) == node })
+            guard towards.isEmpty else {
+                return
+            }
+
+            queueNode(node)
+        }
+
+        // Populate with all nodes with no incoming edges
+        for node in self.nodes {
+            checkNode(node)
+        }
+
+        while !nextNodes.isEmpty {
+            let node = nextNodes.removeFirst()
+            guard visited.insert(node).inserted else {
+                continue
+            }
+
+            result.append(node)
+
+            for edge in edgesRemaining where startNode(for: edge) == node {
+                edgesRemaining.remove(edge)
+                let end = endNode(for: edge)
+
+                checkNode(end)
+            }
+        }
+
+        if !edgesRemaining.isEmpty {
+            // Cycle found
+            return nil
+        }
+
+        return result
     }
 }
 

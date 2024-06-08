@@ -175,40 +175,6 @@ class DirectedGraphTypeTests: XCTestCase {
         XCTAssertEqual(result, 3)
     }
 
-    func testTopologicalSorted() {
-        let sut = makeSut()
-        let n1 = sut.addNode(1)
-        let n2 = sut.addNode(2)
-        let n3 = sut.addNode(3)
-        let n4 = sut.addNode(4)
-        let n5 = sut.addNode(5)
-        sut.addEdge(n1 => n2)
-        sut.addEdge(n2 => n3)
-        sut.addEdge(n2 => n4)
-        sut.addEdge(n3 => n4)
-        sut.addEdge(n4 => n5)
-
-        let result = sut.topologicalSorted()
-
-        XCTAssertEqual(result, [
-            n1, n2, n3, n4, n5
-        ])
-    }
-
-    func testTopologicalSorted_returnsNilForCyclicGraph() {
-        let sut = makeSut()
-        let n1 = sut.addNode(1)
-        let n2 = sut.addNode(2)
-        let n3 = sut.addNode(3)
-        sut.addEdge(n1 => n2)
-        sut.addEdge(n2 => n3)
-        sut.addEdge(n3 => n1)
-
-        let result = sut.topologicalSorted()
-
-        XCTAssertNil(result)
-    }
-
     func testStronglyConnectedComponents_emptyGraph() {
         let sut = makeSut()
 
@@ -323,59 +289,125 @@ class DirectedGraphTypeTests: XCTestCase {
         ])
     }
 
-    // MARK: - Test internals
+    func testTopologicalSorted() {
+        let sut = makeSut()
+        let n1 = sut.addNode(1)
+        let n2 = sut.addNode(2)
+        let n3 = sut.addNode(3)
+        let n4 = sut.addNode(4)
+        let n5 = sut.addNode(5)
+        sut.addEdge(n1 => n2)
+        sut.addEdge(n2 => n3)
+        sut.addEdge(n2 => n4)
+        sut.addEdge(n3 => n4)
+        sut.addEdge(n4 => n5)
 
-    private func makeSut() -> TestGraph {
-        return TestGraph()
+        let result = sut.topologicalSorted()
+
+        XCTAssertEqual(result, [
+            n1, n2, n3, n4, n5
+        ])
     }
 
-    private func assertVisit(
-        _ sut: TestGraph,
-        start: TestGraph.Node,
-        visitMethod: (TestGraph.Node, (TestGraph.VisitElement) -> Bool) -> Void,
-        expected: [TestGraph.VisitElement],
-        line: UInt = #line
-    ) {
-        var visits: [TestGraph.VisitElement] = []
-        let _visit: (TestGraph.VisitElement) -> Bool = {
-            visits.append($0)
-            return true
-        }
+    func testTopologicalSorted_returnsNilForCyclicGraph() {
+        let sut = makeSut()
+        let n1 = sut.addNode(1)
+        let n2 = sut.addNode(2)
+        let n3 = sut.addNode(3)
+        sut.addEdge(n1 => n2)
+        sut.addEdge(n2 => n3)
+        sut.addEdge(n3 => n1)
 
-        visitMethod(start, _visit)
+        let result = sut.topologicalSorted()
 
-        func _formatNode(_ node: TestGraph.Node) -> String {
-            "node #\(node.value.description)"
-        }
-
-        func _formatVisit(_ visit: TestGraph.VisitElement) -> String {
-            switch visit {
-            case .start(let node):
-                return _formatNode(node)
-            case .edge(_, let from, let towards):
-                return "\(_formatVisit(from)) -> \(_formatNode(towards))"
-            }
-        }
-
-        func _formatVisits(_ visits: [TestGraph.VisitElement]) -> String {
-            if visits.isEmpty {
-                return ""
-            }
-
-            return """
-            [
-              \(visits.enumerated().map { "\($0): \(_formatVisit($1))" }.joined(separator: "\n  "))
-            ]
-            """
-        }
-
-        assertEqualUnordered(
-            expected,
-            visits,
-            file: #file,
-            line: line
-        )
+        XCTAssertNil(result)
     }
+
+    func testTopologicalSortedBreakTiesWith() throws {
+        let sut = makeSut()
+        let range = (1..<100)
+        _=range.map(sut.addNode)
+        let node100 = sut.addNode(100)
+        let node101 = sut.addNode(101)
+        for node in sut.nodes where node.value < 100 {
+            sut.addEdge(from: node, to: node100)
+        }
+        sut.addEdge(from: node100, to: node101)
+
+        let result = try XCTUnwrap(sut.topologicalSorted(breakTiesWith: {
+            $0.value < $1.value
+        }))
+
+        XCTAssertEqual(result.map(\.value), range + [100, 101])
+    }
+
+    func testTopologicalSortedBreakTiesWith_graphWithCycles_returnsNil() throws {
+        let sut = makeSut()
+        let n1 = sut.addNode(1)
+        let n2 = sut.addNode(2)
+        let n3 = sut.addNode(3)
+        sut.addEdge(n1 => n2)
+        sut.addEdge(n2 => n3)
+        sut.addEdge(n3 => n1)
+
+        let result = sut.topologicalSorted(breakTiesWith: { $0.value < $1.value })
+
+        XCTAssertNil(result)
+    }
+}
+
+// MARK: - Test internals
+
+private func makeSut() -> TestGraph {
+    return TestGraph()
+}
+
+private func assertVisit(
+    _ sut: TestGraph,
+    start: TestGraph.Node,
+    visitMethod: (TestGraph.Node, (TestGraph.VisitElement) -> Bool) -> Void,
+    expected: [TestGraph.VisitElement],
+    line: UInt = #line
+) {
+    var visits: [TestGraph.VisitElement] = []
+    let _visit: (TestGraph.VisitElement) -> Bool = {
+        visits.append($0)
+        return true
+    }
+
+    visitMethod(start, _visit)
+
+    func _formatNode(_ node: TestGraph.Node) -> String {
+        "node #\(node.value.description)"
+    }
+
+    func _formatVisit(_ visit: TestGraph.VisitElement) -> String {
+        switch visit {
+        case .start(let node):
+            return _formatNode(node)
+        case .edge(_, let from, let towards):
+            return "\(_formatVisit(from)) -> \(_formatNode(towards))"
+        }
+    }
+
+    func _formatVisits(_ visits: [TestGraph.VisitElement]) -> String {
+        if visits.isEmpty {
+            return ""
+        }
+
+        return """
+        [
+            \(visits.enumerated().map { "\($0): \(_formatVisit($1))" }.joined(separator: "\n  "))
+        ]
+        """
+    }
+
+    assertEqualUnordered(
+        expected,
+        visits,
+        file: #file,
+        line: line
+    )
 }
 
 extension TestGraph: DirectedGraphType {
