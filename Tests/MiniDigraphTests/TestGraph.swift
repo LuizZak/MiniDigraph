@@ -22,7 +22,7 @@ class TestGraph {
         ]
     }
 
-    class Node: DirectedGraphNode, CustomDebugStringConvertible {
+    class Node: Hashable, CustomDebugStringConvertible {
         var value: Int
 
         var debugDescription: String {
@@ -31,6 +31,14 @@ class TestGraph {
 
         init(value: Int) {
             self.value = value
+        }
+
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(ObjectIdentifier(self))
+        }
+
+        static func == (lhs: Node, rhs: Node) -> Bool {
+            lhs === rhs
         }
     }
 

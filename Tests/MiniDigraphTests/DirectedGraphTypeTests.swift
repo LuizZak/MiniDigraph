@@ -13,7 +13,7 @@ class DirectedGraphTests: XCTestCase {
 
         let result = sut.allEdges(for: n1)
 
-        assertEqualUnordered(result, [e1, e2])
+        XCTAssertEqual(result, [e1, e2])
     }
 
     func testNodesConnectedFromNode() {
@@ -26,7 +26,7 @@ class DirectedGraphTests: XCTestCase {
 
         let result = sut.nodesConnected(from: n1)
 
-        assertEqualUnordered(result, [n2, n3])
+        XCTAssertEqual(result, [n2, n3])
     }
 
     func testNodesConnectedTowardsNode() {
@@ -39,7 +39,7 @@ class DirectedGraphTests: XCTestCase {
 
         let result = sut.nodesConnected(towards: n2)
 
-        assertEqualUnordered(result, [n1])
+        XCTAssertEqual(result, [n1])
     }
 
     func testAllNodesConnectedToNode() {
@@ -52,7 +52,7 @@ class DirectedGraphTests: XCTestCase {
 
         let result = sut.allNodesConnected(to: n2)
 
-        assertEqualUnordered(result, [n1, n3])
+        XCTAssertEqual(result, [n1, n3])
     }
 
     func testDepthFirstVisit() {
@@ -161,7 +161,7 @@ class DirectedGraphTests: XCTestCase {
 
         let result = sut.stronglyConnectedComponents()
 
-        assertEqualUnordered(result, [[node]])
+        XCTAssertEqual(result, [[node]])
     }
 
     func testStronglyConnectedComponents_twoNodes_notConnected() {
@@ -193,7 +193,7 @@ class DirectedGraphTests: XCTestCase {
 
         let result = sut.stronglyConnectedComponents()
 
-        assertEqualUnordered(result, [[node1, node2]])
+        XCTAssertEqual(result, [[node1, node2]])
     }
 
     func testStronglyConnectedComponents_fourNodes() {
@@ -208,7 +208,7 @@ class DirectedGraphTests: XCTestCase {
 
         let result = sut.stronglyConnectedComponents()
 
-        assertEqualUnordered(result, [[node1, node2], [node3, node4]])
+        XCTAssertEqual(result, [[node3, node4], [node1, node2]])
     }
 
     func testConnectedComponents() {
@@ -222,7 +222,7 @@ class DirectedGraphTests: XCTestCase {
 
         let result = sut.connectedComponents()
 
-        assertEqualUnordered(result, [
+        XCTAssertEqual(result, [
             [node1, node2, node3],
             [node4],
         ])
@@ -240,7 +240,7 @@ class DirectedGraphTests: XCTestCase {
 
         let result = sut.connectedComponents()
 
-        assertEqualUnordered(result, [
+        XCTAssertEqual(result, [
             [node1, node2, node3],
             [node4],
         ])
@@ -256,7 +256,7 @@ class DirectedGraphTests: XCTestCase {
 
         let result = sut.connectedComponents()
 
-        assertEqualUnordered(result, [
+        XCTAssertEqual(result, [
             Set(nodes).union([node1]),
         ])
     }

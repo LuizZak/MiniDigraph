@@ -3,6 +3,9 @@ import MiniDigraph
 // Convenience operator for generating edges
 infix operator => : MultiplicationPrecedence
 
+// Convenience operator for generating edges
+infix operator <=> : MultiplicationPrecedence
+
 // Convenience operator for generating visit elements
 infix operator ~~> : MultiplicationPrecedence
 
@@ -21,4 +24,11 @@ func ~~> <E, N>(lhs: N, rhs: (edge: E, node: N)) -> DirectedGraphVisitElement<E,
 /// Convenience for `TestGraph.Edge(start: lhs, end: rhs)`
 func => (lhs: TestGraph.Node, rhs: TestGraph.Node) -> TestGraph.Edge {
     .init(start: lhs, end: rhs)
+}
+
+/// Creates a pair of edges from `lhs` to `rhs`.
+///
+/// Convenience for `[TestGraph.Edge(start: rhs, end: lhs), TestGraph.Edge(start: lhs, end: rhs)]`
+func <=> (lhs: TestGraph.Node, rhs: TestGraph.Node) -> [TestGraph.Edge] {
+    [lhs => rhs, rhs => lhs]
 }

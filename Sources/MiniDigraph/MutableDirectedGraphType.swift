@@ -14,6 +14,14 @@ public protocol MutableDirectedGraphType: DirectedGraphType {
     /// Removes a given edge from this graph.
     mutating func removeEdge(_ edge: Edge)
 
+    /// Adds a given edge to this graph.
+    ///
+    /// Returns the edge that was inserted, or in case an edge connecting the
+    /// associated nodes already existed within this graph, the original edge
+    /// instance.
+    @discardableResult
+    mutating func addEdge(_ edge: Edge) -> Edge
+
     /// Adds an edge `start -> end` to this graph.
     @discardableResult
     mutating func addEdge(from start: Node, to end: Node) -> Edge
@@ -30,6 +38,9 @@ public protocol MutableDirectedGraphType: DirectedGraphType {
 
     /// Adds a sequence of nodes to this graph.
     mutating func addNodes(_ nodes: some Sequence<Node>)
+
+    /// Adds a sequence of edges to this graph.
+    mutating func addEdges(_ edges: some Sequence<Edge>)
 
     /// Removes a given sequence of nodes from this graph.
     mutating func removeNodes(_ nodesToRemove: some Sequence<Node>)
@@ -97,6 +108,12 @@ extension MutableDirectedGraphType {
     public mutating func addNodes(_ nodes: some Sequence<Node>) {
         for node in nodes {
             addNode(node)
+        }
+    }
+
+    public mutating func addEdges(_ edges: some Sequence<Edge>) {
+        for edge in edges {
+            addEdge(edge)
         }
     }
 

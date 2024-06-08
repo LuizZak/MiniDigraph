@@ -1,6 +1,6 @@
 /// A generic implementation of a directed graph for arbitrary hashable `Node`
 /// types, with a default `Edge` type implementation provided.
-public struct DirectedGraph<Node> where Node: DirectedGraphNode {
+public struct DirectedGraph<Node> where Node: Hashable {
     public var nodes: Set<Node>
     public var edges: Set<Edge>
 
@@ -72,6 +72,11 @@ extension DirectedGraph: MutableDirectedGraphType {
         nodes.insert(node)
     }
 
+    @discardableResult
+    public mutating func addEdge(_ edge: Edge) -> Edge {
+        return edges.insert(edge).memberAfterInsert
+    }
+
     public mutating func removeNode(_ node: Node) {
         nodes.remove(node)
         edges = edges.filter {
@@ -83,15 +88,9 @@ extension DirectedGraph: MutableDirectedGraphType {
         edges.remove(edge)
     }
 
-    public mutating func addEdge(_ edge: Edge) {
-        edges.insert(edge)
-    }
-
     @discardableResult
     public mutating func addEdge(from start: Node, to end: Node) -> Edge {
-        let edge = Edge(start: start, end: end)
-        addEdge(edge)
-        return edge
+        return addEdge(Edge(start: start, end: end))
     }
 }
 
