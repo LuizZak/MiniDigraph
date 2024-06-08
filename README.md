@@ -1,6 +1,6 @@
 # MiniDigraph
 
-A teeny-tiny-weeny directed graph library written in Swift available as a Swift Package. 
+A teeny-tiny-weeny directed graph library written in Swift available as a Swift Package.
 
 Mostly used as a dependency by my other OSS projects.
 
