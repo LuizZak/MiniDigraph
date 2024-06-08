@@ -113,6 +113,68 @@ class DirectedGraphTests: XCTestCase {
         )
     }
 
+    func testHasPath() {
+        let sut = makeSut()
+        let n1 = sut.addNode(1)
+        let n2 = sut.addNode(2)
+        let n3 = sut.addNode(3)
+        let n4 = sut.addNode(4)
+        let n5 = sut.addNode(5)
+        sut.addEdge(n1 => n2)
+        sut.addEdge(n2 => n3)
+        sut.addEdge(n2 => n4)
+        sut.addEdge(n3 => n3)
+        sut.addEdge(n3 => n4)
+        sut.addEdge(n4 => n5)
+
+        XCTAssertTrue(sut.hasPath(from: n1, to: n2))
+        XCTAssertTrue(sut.hasPath(from: n1, to: n5))
+        XCTAssertTrue(sut.hasPath(from: n3, to: n3))
+        XCTAssertTrue(sut.hasPath(from: n3, to: n5))
+        XCTAssertFalse(sut.hasPath(from: n5, to: n1))
+        XCTAssertFalse(sut.hasPath(from: n5, to: n3))
+    }
+
+    func testShortestPath() {
+        let sut = makeSut()
+        let n1 = sut.addNode(1)
+        let n2 = sut.addNode(2)
+        let n3 = sut.addNode(3)
+        let n4 = sut.addNode(4)
+        let n5 = sut.addNode(5)
+        sut.addEdge(n1 => n2)
+        sut.addEdge(n2 => n3)
+        sut.addEdge(n2 => n4)
+        sut.addEdge(n3 => n3)
+        sut.addEdge(n3 => n4)
+        sut.addEdge(n4 => n5)
+
+        let result = sut.shortestPath(from: n1, to: n5)
+
+        XCTAssertEqual(result, [
+            n1, n2, n4, n5,
+        ])
+    }
+
+    func testShortestDistance() {
+        let sut = makeSut()
+        let n1 = sut.addNode(1)
+        let n2 = sut.addNode(2)
+        let n3 = sut.addNode(3)
+        let n4 = sut.addNode(4)
+        let n5 = sut.addNode(5)
+        sut.addEdge(n1 => n2)
+        sut.addEdge(n2 => n3)
+        sut.addEdge(n2 => n4)
+        sut.addEdge(n3 => n3)
+        sut.addEdge(n3 => n4)
+        sut.addEdge(n4 => n5)
+
+        let result = sut.shortestDistance(from: n1, to: n5)
+
+        XCTAssertEqual(result, 3)
+    }
+
     func testTopologicalSorted() {
         let sut = makeSut()
         let n1 = sut.addNode(1)

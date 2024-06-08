@@ -67,6 +67,31 @@ public protocol DirectedGraphType {
     /// Returns `true` if the directed graph has a path between the two given nodes.
     func hasPath(from start: Node, to end: Node) -> Bool
 
+    /// Returns the shortest number of edges that need to be traversed to get from
+    /// the given start node to the given end node.
+    ///
+    /// If `start == end`, `0` is returned.
+    ///
+    /// In case the two nodes are not connected, or are connected in the opposite
+    /// direction, `nil` is returned.
+    ///
+    /// - complexity: O(n), where _n_ is the number of nodes and edges in this
+    /// graph.
+    @inlinable
+    func shortestDistance(from start: Node, to end: Node) -> Int?
+
+    /// Returns any of the shortest paths found between two nodes.
+    ///
+    /// If `start == end`, `[start]` is returned.
+    ///
+    /// In case the two nodes are not connected, or are connected in the opposite
+    /// direction, `nil` is returned.
+    ///
+    /// - complexity: O(n), where _n_ is the number of nodes and edges in this
+    /// graph.
+    @inlinable
+    func shortestPath(from start: Node, to end: Node) -> [Node]?
+
     /// Computes and returns the strongly connected components of this directed
     /// graph.
     ///
@@ -269,6 +294,31 @@ public extension DirectedGraphType {
         }
 
         return found
+    }
+
+    @inlinable
+    func shortestDistance(from start: Node, to end: Node) -> Int? {
+        if let path = shortestPath(from: start, to: end) {
+            return path.count - 1
+        }
+
+        return nil
+    }
+
+    @inlinable
+    func shortestPath(from start: Node, to end: Node) -> [Node]? {
+        var path: VisitElement?
+
+        breadthFirstVisit(start: start) { visit in
+            if visit.node == end {
+                path = visit
+                return false
+            }
+
+            return true
+        }
+
+        return path?.allNodes
     }
 
     @inlinable
