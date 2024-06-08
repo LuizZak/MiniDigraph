@@ -2,7 +2,7 @@ import XCTest
 
 @testable import MiniDigraph
 
-class DirectedGraphTests: XCTestCase {
+class DirectedGraphTypeTests: XCTestCase {
     func testAllEdgesForNode() {
         let sut = makeSut()
         let n1 = sut.addNode(0)

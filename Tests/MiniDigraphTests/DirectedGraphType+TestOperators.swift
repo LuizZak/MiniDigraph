@@ -32,3 +32,10 @@ func => (lhs: TestGraph.Node, rhs: TestGraph.Node) -> TestGraph.Edge {
 func <=> (lhs: TestGraph.Node, rhs: TestGraph.Node) -> [TestGraph.Edge] {
     [lhs => rhs, rhs => lhs]
 }
+
+/// Creates edge from `lhs` to `rhs`.
+///
+/// Convenience for `TestGraph.Edge(start: lhs, end: rhs)`
+func => <T>(lhs: DirectedGraph<T>.Node, rhs: DirectedGraph<T>.Node) -> DirectedGraph<T>.Edge {
+    .init(start: lhs, end: rhs)
+}

@@ -68,6 +68,45 @@ extension DirectedGraph: DirectedGraphType {
 }
 
 extension DirectedGraph: MutableDirectedGraphType {
+    /// Returns a new graph where each node is a strongly connected component
+    /// within `self`, compacting the nodes and their connections to a single
+    /// element of type `Element`.
+    ///
+    /// The result of this operation is always a directed acyclic graph.
+    public func stronglyConnectedSubgraph<Element>(
+        _ transform: (Set<Node>) -> Element
+    ) -> DirectedGraph<Element> {
+
+        var subgraph = DirectedGraph<Element>()
+        let components = self.stronglyConnectedComponents()
+        var componentMap: [Node: Element] = [:]
+
+        for component in components {
+            let newNode = transform(component)
+            for node in component {
+                componentMap[node] = newNode
+            }
+
+            subgraph.addNode(newNode)
+        }
+
+        // Map edges
+        for edge in edges {
+            guard let start = componentMap[edge.start], let end = componentMap[edge.end] else {
+                // Found edge pointing to node not part of any components?
+                continue
+            }
+            // Avoid cycles pointing back to the original node
+            guard start != end else {
+                continue
+            }
+
+            subgraph.addEdge(from: start, to: end)
+        }
+
+        return subgraph
+    }
+
     public mutating func addNode(_ node: Node) {
         nodes.insert(node)
     }
