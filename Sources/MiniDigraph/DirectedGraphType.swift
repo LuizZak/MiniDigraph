@@ -555,9 +555,10 @@ public extension DirectedGraphType {
         }
 
         // Populate with all nodes with no incoming edges
-        for node in self.nodes {
-            checkNode(node)
+        for node in nodes where edges(towards: node).isEmpty {
+            nextNodes.append(node)
         }
+        nextNodes.sort(by: areInIncreasingOrder)
 
         while !nextNodes.isEmpty {
             let node = nextNodes.removeFirst()
