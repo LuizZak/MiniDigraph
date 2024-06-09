@@ -341,6 +341,33 @@ class DirectedGraphTypeTests: XCTestCase {
         XCTAssertEqual(result.map(\.value), range + [100, 101])
     }
 
+    func testTopologicalSortedBreakTiesWith_lexicographicalInteger() throws {
+        // 5     7     3
+        // |    /|    /|
+        // v   / v   / |
+        // 11 <  8 <   |
+        // |\----|-    |
+        // v \   | \   v
+        // 2   > 9   > 10
+        var sut = DirectedGraph<Int>()
+        sut.addNodes([5, 7, 3, 11, 8, 2, 9, 10])
+        sut.addEdge(5 => 11)
+        sut.addEdge(7 => 8)
+        sut.addEdge(7 => 11)
+        sut.addEdge(3 => 8)
+        sut.addEdge(3 => 10)
+        sut.addEdge(11 => 2)
+        sut.addEdge(11 => 9)
+        sut.addEdge(11 => 10)
+        sut.addEdge(8 => 9)
+
+        let sorted = sut.topologicalSorted(breakTiesWith: <)
+
+        XCTAssertEqual(sorted, [
+            3, 5, 7, 8, 11, 2, 9, 10,
+        ])
+    }
+
     func testTopologicalSortedBreakTiesWith_graphWithCycles_returnsNil() throws {
         let sut = makeSut()
         let n1 = sut.addNode(1)

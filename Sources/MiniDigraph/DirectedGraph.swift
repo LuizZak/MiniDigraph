@@ -113,6 +113,9 @@ extension DirectedGraph: MutableDirectedGraphType {
 
     @discardableResult
     public mutating func addEdge(_ edge: Edge) -> Edge {
+        assert(nodes.contains(edge.start), "!nodes.contains(edge.start): \(edge.start)")
+        assert(nodes.contains(edge.end), "!nodes.contains(edge.end): \(edge.end)")
+
         return edges.insert(edge).memberAfterInsert
     }
 
@@ -124,7 +127,8 @@ extension DirectedGraph: MutableDirectedGraphType {
     }
 
     public mutating func removeEdge(_ edge: Edge) {
-        edges.remove(edge)
+        let result = edges.remove(edge)
+        assert(result != nil, "edges.remove(edge) != nil: \(edge)")
     }
 
     @discardableResult
@@ -138,11 +142,13 @@ extension DirectedGraph: MutableDirectedGraphType {
 public extension DirectedGraph {
     @inlinable
     func allEdges(for node: Node) -> Set<Edge> {
-        edges.filter { $0.start == node && $0.end == node }
+        assert(nodes.contains(node), "nodes.contains(node)")
+        return edges.filter { $0.start == node && $0.end == node }
     }
 
     @inlinable
     func nodesConnected(from node: Node) -> Set<Node> {
+        assert(nodes.contains(node), "nodes.contains(node)")
         let nodes = edges.compactMap { edge in
             if edge.start == node {
                 edge.end
@@ -155,6 +161,7 @@ public extension DirectedGraph {
 
     @inlinable
     func nodesConnected(towards node: Node) -> Set<Node> {
+        assert(nodes.contains(node), "nodes.contains(node)")
         let nodes = edges.compactMap { edge in
             if edge.end == node {
                 edge.start
@@ -167,6 +174,7 @@ public extension DirectedGraph {
 
     @inlinable
     func allNodesConnected(to node: Node) -> Set<Node> {
+        assert(nodes.contains(node), "nodes.contains(node)")
         let nodes = edges.compactMap { edge in
             if edge.end == node {
                 edge.start

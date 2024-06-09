@@ -530,7 +530,6 @@ public extension DirectedGraphType {
     @inlinable
     func topologicalSorted(breakTiesWith areInIncreasingOrder: (Node, Node) -> Bool) -> [Node]? {
         var result: [Node] = []
-        var visited: Set<Node> = []
         var edgesRemaining: Set<Edge> = self.edges
         var nextNodes: [Node] = []
 
@@ -562,10 +561,6 @@ public extension DirectedGraphType {
 
         while !nextNodes.isEmpty {
             let node = nextNodes.removeFirst()
-            guard visited.insert(node).inserted else {
-                continue
-            }
-
             result.append(node)
 
             for edge in edgesRemaining where startNode(for: edge) == node {
