@@ -1,6 +1,8 @@
 /// A generic implementation of a directed graph for arbitrary hashable `Node`
-/// types, with a default `Edge` type implementation provided.
-public struct DirectedGraph<Node> where Node: Hashable {
+/// types, with an `Edge` type that conforms to a simple edge protocol.
+public struct AbstractDirectedGraph<Node, Edge>
+    where Node: Hashable, Edge: AbstractDirectedGraphEdge, Edge.Node == Node
+{
     public var nodes: Set<Node>
     public var edges: Set<Edge>
 
@@ -18,68 +20,50 @@ public struct DirectedGraph<Node> where Node: Hashable {
         self.nodes = Set(nodes)
         self.edges = Set(edges)
     }
-
-    /// A default edge implementation.
-    public struct Edge: SimpleDirectedGraphEdge {
-        public var start: Node
-        public var end: Node
-
-        public init(start: Node, end: Node) {
-            self.start = start
-            self.end = end
-        }
-    }
 }
 
-extension DirectedGraph: Equatable { }
-extension DirectedGraph.Edge: CustomStringConvertible where DirectedGraph.Node: CustomStringConvertible {
-    public var description: String {
-        "\(start.description) -> \(end.description)"
-    }
+public protocol AbstractDirectedGraphEdge: DirectedGraphEdge {
+    associatedtype Node: Hashable
+
+    /// The starting node of this edge.
+    var start: Node { get }
+
+    /// The ending node of this edge.
+    var end: Node { get }
 }
+
+extension AbstractDirectedGraph: Equatable { }
 
 // MARK: - Required conformances
 
-extension DirectedGraph: MutableDirectedGraphType {
-    /// Returns a new graph where each node is a strongly connected component
-    /// within `self`, compacting the nodes and their connections to a single
-    /// element of type `Element`.
-    ///
-    /// The result of this operation is always a directed acyclic graph.
-    public func stronglyConnectedSubgraph<Element>(
-        _ transform: (Set<Node>) -> Element
-    ) -> DirectedGraph<Element> {
-
-        var subgraph = DirectedGraph<Element>()
-        let components = self.stronglyConnectedComponents()
-        var componentMap: [Node: Element] = [:]
-
-        for component in components {
-            let newNode = transform(component)
-            for node in component {
-                componentMap[node] = newNode
-            }
-
-            subgraph.addNode(newNode)
-        }
-
-        // Map edges
-        for edge in edges {
-            guard let start = componentMap[edge.start], let end = componentMap[edge.end] else {
-                // Found edge pointing to node not part of any components?
-                continue
-            }
-            // Avoid cycles pointing back to the original node
-            guard start != end else {
-                continue
-            }
-
-            subgraph.addEdge(from: start, to: end)
-        }
-
-        return subgraph
+extension AbstractDirectedGraph: DirectedGraphType {
+    @inlinable
+    public func startNode(for edge: Edge) -> Node {
+        edge.start
     }
 
+    @inlinable
+    public func endNode(for edge: Edge) -> Node {
+        edge.end
+    }
+
+    @inlinable
+    public func edges(from node: Node) -> Set<Edge> {
+        edges.filter { $0.start == node }
+    }
+
+    @inlinable
+    public func edges(towards node: Node) -> Set<Edge> {
+        edges.filter { $0.end == node }
+    }
+
+    @inlinable
+    public func edge(from start: Node, to end: Node) -> Edge? {
+        edges.first { $0.start == start && $0.end == end }
+    }
+}
+
+extension AbstractDirectedGraph: MutableDirectedGraphType {
     public mutating func addNode(_ node: Node) {
         nodes.insert(node)
     }
@@ -103,16 +87,11 @@ extension DirectedGraph: MutableDirectedGraphType {
         let result = edges.remove(edge)
         assert(result != nil, "edges.remove(edge) != nil: \(edge)")
     }
-
-    @discardableResult
-    public mutating func addEdge(from start: Node, to end: Node) -> Edge {
-        return addEdge(Edge(start: start, end: end))
-    }
 }
 
 // MARK: - Optimized conformances
 
-public extension DirectedGraph {
+public extension AbstractDirectedGraph {
     @inlinable
     func allEdges(for node: Node) -> Set<Edge> {
         assert(nodes.contains(node), "nodes.contains(node)")

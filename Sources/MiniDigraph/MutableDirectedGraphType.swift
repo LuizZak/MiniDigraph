@@ -11,9 +11,6 @@ public protocol MutableDirectedGraphType: DirectedGraphType {
     /// Removes a given node from this graph.
     mutating func removeNode(_ node: Node)
 
-    /// Removes a given edge from this graph.
-    mutating func removeEdge(_ edge: Edge)
-
     /// Adds a given edge to this graph.
     ///
     /// Returns the edge that was inserted, or in case an edge connecting the
@@ -22,9 +19,8 @@ public protocol MutableDirectedGraphType: DirectedGraphType {
     @discardableResult
     mutating func addEdge(_ edge: Edge) -> Edge
 
-    /// Adds an edge `start -> end` to this graph.
-    @discardableResult
-    mutating func addEdge(from start: Node, to end: Node) -> Edge
+    /// Removes a given edge from this graph.
+    mutating func removeEdge(_ edge: Edge)
 
     // MARK: - Optional conformances
 
@@ -60,27 +56,6 @@ public protocol MutableDirectedGraphType: DirectedGraphType {
     /// Returns the set of edges that where removed.
     @discardableResult
     mutating func removeExitEdges(from node: Node) -> Set<Edge>
-
-    /// Moves the entry edges from a given node to a target node.
-    ///
-    /// The existing entry edges for `other` are kept as is.
-    ///
-    /// The return list contains the new edges that where created.
-    @discardableResult
-    mutating func redirectEntries(for node: Node, to other: Node) -> Set<Edge>
-
-    /// Moves the exit edges from a given node to a target node.
-    ///
-    /// The existing exit edges for `other` are kept as is.
-    ///
-    /// The return list contains the new edges that where created.
-    @discardableResult
-    mutating func redirectExits(for node: Node, to other: Node) -> Set<Edge>
-
-    /// Prepends a node before a suffix node, redirecting the entries to the
-    /// suffix node to the prefix node, and adding an edge from the prefix to the
-    /// suffix node.
-    mutating func prepend(_ node: Node, before next: Node)
 }
 
 extension MutableDirectedGraphType {
@@ -94,7 +69,7 @@ extension MutableDirectedGraphType {
         graph.addNodes(nodeSet)
 
         for edge in connectedEdges {
-            graph.addEdge(from: startNode(for: edge), to: endNode(for: edge))
+            graph.addEdge(edge)
         }
 
         return graph
@@ -148,51 +123,5 @@ extension MutableDirectedGraphType {
         let connections = edges(from: node)
         removeEdges(connections)
         return connections
-    }
-
-    @discardableResult
-    public mutating func redirectEntries(for node: Node, to other: Node) -> Set<Edge> {
-        var result: Set<Edge> = []
-
-        for connection in removeEntryEdges(towards: node) {
-            guard !areConnected(start: startNode(for: connection), end: other) else {
-                continue
-            }
-
-            let edge = addEdge(from: startNode(for: connection), to: other)
-
-            result.insert(edge)
-        }
-
-        return result
-    }
-
-    @discardableResult
-    public mutating func redirectExits(for node: Node, to other: Node) -> Set<Edge> {
-        var result: Set<Edge> = []
-
-        for connection in removeExitEdges(from: node) {
-            guard !areConnected(start: other, end: endNode(for: connection)) else {
-                continue
-            }
-
-            let edge = addEdge(from: other, to: endNode(for: connection))
-
-            result.insert(edge)
-        }
-
-        return result
-    }
-
-    public mutating func prepend(_ node: Node, before next: Node) {
-        if !containsNode(node) {
-            addNode(node)
-        } else {
-            let fromEdges = edges(from: node)
-            removeEdges(fromEdges)
-        }
-
-        redirectEntries(for: next, to: node)
-        addEdge(from: node, to: next)
     }
 }

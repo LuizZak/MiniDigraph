@@ -42,7 +42,7 @@ class TestGraph {
         }
     }
 
-    struct Edge: DirectedGraphEdge, CustomDebugStringConvertible {
+    struct Edge: SimpleDirectedGraphEdge, CustomDebugStringConvertible {
         var start: Node
         var end: Node
 

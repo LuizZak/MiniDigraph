@@ -580,7 +580,29 @@ public extension DirectedGraphType {
     }
 }
 
-/// A protocol for representing a directed graph's edge.
-public protocol DirectedGraphEdge: Hashable {
+public extension DirectedGraphType where Self.Edge: SimpleDirectedGraphEdge, Self.Edge.Node == Node {
+    @inlinable
+    func startNode(for edge: Edge) -> Node {
+        edge.start
+    }
 
+    @inlinable
+    func endNode(for edge: Edge) -> Node {
+        edge.end
+    }
+
+    @inlinable
+    func edges(from node: Node) -> Set<Edge> {
+        self.edges.filter { $0.start == node }
+    }
+
+    @inlinable
+    func edges(towards node: Node) -> Set<Edge> {
+        self.edges.filter { $0.end == node }
+    }
+
+    @inlinable
+    func edge(from start: Node, to end: Node) -> Edge? {
+        self.edges.first { $0.start == start && $0.end == end }
+    }
 }
