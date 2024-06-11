@@ -59,6 +59,7 @@ public protocol MutableDirectedGraphType: DirectedGraphType {
 }
 
 extension MutableDirectedGraphType {
+    @inlinable
     public func subgraph(of nodes: some Sequence<Node>) -> Self {
         let nodeSet = Set(nodes)
         let connectedEdges = self.edges.filter {
@@ -75,23 +76,27 @@ extension MutableDirectedGraphType {
         return graph
     }
 
+    @inlinable
     public mutating func clear() {
         removeEdges(self.edges)
         removeNodes(self.nodes)
     }
 
+    @inlinable
     public mutating func addNodes(_ nodes: some Sequence<Node>) {
         for node in nodes {
             addNode(node)
         }
     }
 
+    @inlinable
     public mutating func addEdges(_ edges: some Sequence<Edge>) {
         for edge in edges {
             addEdge(edge)
         }
     }
 
+    @inlinable
     public mutating func removeNodes(_ nodesToRemove: some Sequence<Node>) {
         for node in nodesToRemove {
             removeEdges(allEdges(for: node))
@@ -99,18 +104,21 @@ extension MutableDirectedGraphType {
         }
     }
 
+    @inlinable
     public mutating func removeEdge(from start: Node, to end: Node) {
         if let edge = edge(from: start, to: end) {
             removeEdge(edge)
         }
     }
 
+    @inlinable
     public mutating func removeEdges(_ edgesToRemove: some Sequence<Edge>) {
         for edge in edgesToRemove {
             removeEdge(edge)
         }
     }
 
+    @inlinable
     @discardableResult
     public mutating func removeEntryEdges(towards node: Node) -> Set<Edge> {
         let connections = edges(towards: node)
@@ -118,6 +126,7 @@ extension MutableDirectedGraphType {
         return connections
     }
 
+    @inlinable
     @discardableResult
     public mutating func removeExitEdges(from node: Node) -> Set<Edge> {
         let connections = edges(from: node)

@@ -6,7 +6,8 @@ public protocol DirectedGraphEdge: Hashable { }
 ///
 /// A set of default implementations of the `Hashable`/`Equatable` conformances
 /// use the start and end nodes as equality/hashing points.
-public protocol SimpleDirectedGraphEdge: DirectedGraphEdge {
+public protocol SimpleDirectedGraphEdge<Node>: DirectedGraphEdge {
+    /// The node type associated with this simple edge type.
     associatedtype Node: Hashable
 
     /// The starting node of this edge.

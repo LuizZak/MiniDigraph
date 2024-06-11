@@ -1,5 +1,5 @@
 /// A generic implementation of a directed graph for arbitrary hashable `Node`
-/// types, with an `Edge` type that conforms to a simple edge protocol.
+/// types, with an `Edge` type that conforms to a basic edge protocol.
 public struct AbstractDirectedGraph<Node, Edge>
     where Node: Hashable, Edge: AbstractDirectedGraphEdge, Edge.Node == Node
 {
@@ -22,6 +22,8 @@ public struct AbstractDirectedGraph<Node, Edge>
     }
 }
 
+/// An edge of an `AbstractDirectedGraph`, that always exposes the start/end node
+/// of the edge as properties, but may have other differentiating properties.
 public protocol AbstractDirectedGraphEdge: DirectedGraphEdge {
     associatedtype Node: Hashable
 
@@ -87,6 +89,10 @@ extension AbstractDirectedGraph: MutableDirectedGraphType {
         let result = edges.remove(edge)
         assert(result != nil, "edges.remove(edge) != nil: \(edge)")
     }
+}
+
+extension AbstractDirectedGraph: MutableSimpleEdgeDirectedGraphType where Edge: SimpleDirectedGraphEdge {
+
 }
 
 // MARK: - Optimized conformances

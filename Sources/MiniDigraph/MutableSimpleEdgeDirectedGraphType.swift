@@ -28,10 +28,12 @@ public protocol MutableSimpleEdgeDirectedGraphType: MutableDirectedGraphType whe
 }
 
 public extension MutableSimpleEdgeDirectedGraphType {
+    @inlinable
     mutating func addEdge(from start: Node, to end: Node) -> Edge {
         self.addEdge(Edge(start: start, end: end))
     }
 
+    @inlinable
     @discardableResult
     mutating func redirectEntries(for node: Node, to other: Node) -> Set<Edge> {
         var result: Set<Edge> = []
@@ -49,6 +51,7 @@ public extension MutableSimpleEdgeDirectedGraphType {
         return result
     }
 
+    @inlinable
     @discardableResult
     mutating func redirectExits(for node: Node, to other: Node) -> Set<Edge> {
         var result: Set<Edge> = []
@@ -66,6 +69,7 @@ public extension MutableSimpleEdgeDirectedGraphType {
         return result
     }
 
+    @inlinable
     mutating func prepend(_ node: Node, before next: Node) {
         if !containsNode(node) {
             addNode(node)
