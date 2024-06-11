@@ -3,8 +3,8 @@
 public struct AbstractDirectedGraph<Node, Edge>
     where Node: Hashable, Edge: AbstractDirectedGraphEdge, Edge.Node == Node
 {
-    public var nodes: Set<Node>
-    public var edges: Set<Edge>
+    internal(set) public var nodes: Set<Node>
+    internal(set) public var edges: Set<Edge>
 
     public init() {
         nodes = []

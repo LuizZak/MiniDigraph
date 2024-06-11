@@ -1,8 +1,8 @@
 /// A generic implementation of a directed graph for arbitrary hashable `Node`
 /// types, with a default `Edge` type implementation provided.
 public struct DirectedGraph<Node> where Node: Hashable {
-    public var nodes: Set<Node>
-    public var edges: Set<Edge>
+    internal(set) public var nodes: Set<Node>
+    internal(set) public var edges: Set<Edge>
 
     public init() {
         nodes = []
