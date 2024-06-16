@@ -24,7 +24,10 @@ public protocol MutableSimpleEdgeDirectedGraphType: MutableDirectedGraphType whe
     /// Prepends a node before a suffix node, redirecting the entries to the
     /// suffix node to the prefix node, and adding an edge from the prefix to the
     /// suffix node.
-    mutating func prepend(_ node: Node, before next: Node)
+    ///
+    /// Returns the edge that was created from `node` to `next`.
+    @discardableResult
+    mutating func prepend(_ node: Node, before next: Node) -> Edge
 }
 
 public extension MutableSimpleEdgeDirectedGraphType {
@@ -70,7 +73,8 @@ public extension MutableSimpleEdgeDirectedGraphType {
     }
 
     @inlinable
-    mutating func prepend(_ node: Node, before next: Node) {
+    @discardableResult
+    mutating func prepend(_ node: Node, before next: Node) -> Edge {
         if !containsNode(node) {
             addNode(node)
         } else {
@@ -79,6 +83,6 @@ public extension MutableSimpleEdgeDirectedGraphType {
         }
 
         redirectEntries(for: next, to: node)
-        addEdge(from: node, to: next)
+        return addEdge(from: node, to: next)
     }
 }
