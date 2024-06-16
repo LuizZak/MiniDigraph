@@ -159,4 +159,14 @@ public extension DirectedGraph {
         }
         return Set(nodes)
     }
+
+    @inlinable
+    func indegree(of node: Node) -> Int {
+        self.edges.count { $0.end == node }
+    }
+
+    @inlinable
+    func outdegree(of node: Node) -> Int {
+        self.edges.count { $0.start == node }
+    }
 }

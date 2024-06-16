@@ -144,4 +144,14 @@ public extension AbstractDirectedGraph {
         }
         return Set(nodes)
     }
+
+    @inlinable
+    func indegree(of node: Node) -> Int {
+        edges.count { $0.end == node }
+    }
+
+    @inlinable
+    func outdegree(of node: Node) -> Int {
+        edges.count { $0.start == node }
+    }
 }

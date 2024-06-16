@@ -72,6 +72,14 @@ public protocol DirectedGraphType {
     /// - precondition: `node` is a valid node within this graph.
     func allNodesConnected(to node: Node) -> Set<Node>
 
+    /// Returns the indegree of a given node, or the number of edges pointing
+    /// towards that node.
+    func indegree(of node: Node) -> Int
+
+    /// Returns the outdegree of a given node, or the number of edges pointing
+    /// from that node.
+    func outdegree(of node: Node) -> Int
+
     /// Performs a depth-first visiting of this directed graph, finishing once
     /// all nodes are visited, or when `visitor` returns false, starting at a
     /// given node.
@@ -284,6 +292,16 @@ public extension DirectedGraphType {
     @inlinable
     func allNodesConnected(to node: Node) -> Set<Node> {
         nodesConnected(towards: node).union(nodesConnected(from: node))
+    }
+
+    @inlinable
+    func indegree(of node: Node) -> Int {
+        edges(towards: node).count
+    }
+
+    @inlinable
+    func outdegree(of node: Node) -> Int {
+        edges(from: node).count
     }
 
     @inlinable
@@ -604,5 +622,15 @@ public extension DirectedGraphType where Self.Edge: SimpleDirectedGraphEdge, Sel
     @inlinable
     func edge(from start: Node, to end: Node) -> Edge? {
         self.edges.first { $0.start == start && $0.end == end }
+    }
+
+    @inlinable
+    func indegree(of node: Node) -> Int {
+        self.edges.count { $0.end == node }
+    }
+
+    @inlinable
+    func outdegree(of node: Node) -> Int {
+        self.edges.count { $0.start == node }
     }
 }

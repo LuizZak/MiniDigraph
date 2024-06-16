@@ -55,6 +55,34 @@ class DirectedGraphTypeTests: XCTestCase {
         XCTAssertEqual(result, [n1, n3])
     }
 
+    func testIndegree() {
+        let sut = makeSut()
+        let n1 = sut.addNode(1)
+        let n2 = sut.addNode(2)
+        let n3 = sut.addNode(3)
+        sut.addEdge(n1 => n2)
+        sut.addEdge(n2 => n3)
+        sut.addEdge(n1 => n3)
+
+        XCTAssertEqual(sut.indegree(of: n1), 0)
+        XCTAssertEqual(sut.indegree(of: n2), 1)
+        XCTAssertEqual(sut.indegree(of: n3), 2)
+    }
+
+    func testOutdegree() {
+        let sut = makeSut()
+        let n1 = sut.addNode(1)
+        let n2 = sut.addNode(2)
+        let n3 = sut.addNode(3)
+        sut.addEdge(n1 => n2)
+        sut.addEdge(n2 => n3)
+        sut.addEdge(n1 => n3)
+
+        XCTAssertEqual(sut.outdegree(of: n1), 2)
+        XCTAssertEqual(sut.outdegree(of: n2), 1)
+        XCTAssertEqual(sut.outdegree(of: n3), 0)
+    }
+
     func testDepthFirstVisit() {
         let sut = makeSut()
         let n1 = sut.addNode(1)
