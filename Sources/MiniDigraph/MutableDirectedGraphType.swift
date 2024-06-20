@@ -16,10 +16,16 @@ public protocol MutableDirectedGraphType: DirectedGraphType {
     /// Returns the edge that was inserted, or in case an edge connecting the
     /// associated nodes already existed within this graph, the original edge
     /// instance.
+    ///
+    /// - precondition: `edge` refers to nodes that are already contained within
+    /// this graph.
     @discardableResult
     mutating func addEdge(_ edge: Edge) -> Edge
 
     /// Removes a given edge from this graph.
+    ///
+    /// - precondition: `edge` refers to an edge that is contained within this
+    /// graph.
     mutating func removeEdge(_ edge: Edge)
 
     // MARK: - Optional conformances

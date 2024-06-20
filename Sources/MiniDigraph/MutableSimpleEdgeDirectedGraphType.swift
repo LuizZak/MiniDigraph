@@ -32,6 +32,7 @@ public protocol MutableSimpleEdgeDirectedGraphType: MutableDirectedGraphType whe
 
 public extension MutableSimpleEdgeDirectedGraphType {
     @inlinable
+    @discardableResult
     mutating func addEdge(from start: Node, to end: Node) -> Edge {
         self.addEdge(Edge(start: start, end: end))
     }

@@ -1,6 +1,8 @@
 import MiniDigraph
 
 class TestGraph {
+    typealias Edge = TestEdge<Node>
+
     var nodes: Set<Node> = []
     var edges: Set<Edge> = []
 
@@ -26,11 +28,15 @@ class TestGraph {
         ]
     }
 
-    class Node: Hashable, CustomDebugStringConvertible {
+    class Node: Hashable, CustomDebugStringConvertible, CustomStringConvertible {
         var value: Int
 
         var debugDescription: String {
             "node #\(value)"
+        }
+
+        var description: String {
+            value.description
         }
 
         init(value: Int) {
@@ -43,20 +49,6 @@ class TestGraph {
 
         static func == (lhs: Node, rhs: Node) -> Bool {
             lhs === rhs
-        }
-    }
-
-    struct Edge: SimpleDirectedGraphEdge, CustomDebugStringConvertible {
-        var start: Node
-        var end: Node
-
-        var debugDescription: String {
-            "\(start.value) => \(end.value)"
-        }
-
-        init(start: TestGraph.Node, end: TestGraph.Node) {
-            self.start = start
-            self.end = end
         }
     }
 }
