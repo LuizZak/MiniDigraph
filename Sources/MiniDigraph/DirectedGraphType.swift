@@ -332,7 +332,7 @@ public extension DirectedGraphType {
     @inlinable
     func hasPath(from start: Node, to end: Node) -> Bool {
         var found = false
-        depthFirstVisit(start: start) { visit in
+        depthFirstVisit(start: DirectedGraphVisitElement.start(start)) { visit in
             if visit.node == end {
                 found = true
                 return false
