@@ -409,6 +409,44 @@ class DirectedGraphTypeTests: XCTestCase {
 
         XCTAssertNil(result)
     }
+
+    func testTopologicalSortedBreakTiesWith_largeEdgeGraph() throws {
+        typealias Node = TestGraph.Node
+
+        // Arrange
+
+        let sut = makeSut()
+        // Make node columns
+        let perColumn = 50
+        let columns: [[Node]] = [
+            sut.addNodes(values: (perColumn * 0)..<(perColumn * 1)),
+            sut.addNodes(values: (perColumn * 1)..<(perColumn * 2)),
+            sut.addNodes(values: (perColumn * 2)..<(perColumn * 3)),
+        ]
+        // Join columns
+        for row0 in 0..<perColumn {
+            let r0c0 = columns[0][row0]
+            let r0c1 = columns[1][row0]
+
+            for row1 in 0..<perColumn {
+                let r1c1 = columns[1][row1]
+                let r1c2 = columns[2][row1]
+
+                sut.addEdge(from: r0c0, to: r1c1)
+                sut.addEdge(from: r0c1, to: r1c2)
+            }
+        }
+
+        // Act
+
+        let result = try XCTUnwrap(sut.topologicalSorted(breakTiesWith: {
+            $0.value < $1.value
+        }))
+
+        // Assert
+
+        XCTAssertEqual(result.map(\.value), columns.flatMap({ $0 }).map(\.value))
+    }
 }
 
 // MARK: - Test internals

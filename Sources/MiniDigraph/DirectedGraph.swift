@@ -116,7 +116,7 @@ public extension DirectedGraph {
     @inlinable
     func allEdges(for node: Node) -> Set<Edge> {
         assert(nodes.contains(node), "nodes.contains(node)")
-        return edges.filter { $0.start == node && $0.end == node }
+        return edges.filter { $0.start == node || $0.end == node }
     }
 
     @inlinable

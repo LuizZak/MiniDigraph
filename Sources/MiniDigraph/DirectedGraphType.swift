@@ -548,7 +548,7 @@ public extension DirectedGraphType {
     @inlinable
     func topologicalSorted(breakTiesWith areInIncreasingOrder: (Node, Node) -> Bool) -> [Node]? {
         var result: [Node] = []
-        var edgesRemaining: Set<Edge> = self.edges
+        var nodeEdgeLookup: [Node: Set<Edge>] = [:]
         var nextNodes: [Node] = []
 
         func queueNode(_ node: Node) {
@@ -562,17 +562,38 @@ public extension DirectedGraphType {
             }
         }
 
+        func innerEdgesFrom(_ node: Node) -> Set<Edge> {
+            nodeEdgeLookup[node, default: []].filter({ startNode(for: $0) == node })
+        }
+
+        func innerIndegree(_ node: Node) -> Int {
+            let towards = nodeEdgeLookup[node, default: []].filter({ endNode(for: $0) == node })
+            return towards.count
+        }
+
+        func innerEraseEdge(_ edge: Edge) {
+            let start = startNode(for: edge)
+            let end = endNode(for: edge)
+
+            nodeEdgeLookup[start]?.remove(edge)
+            nodeEdgeLookup[end]?.remove(edge)
+        }
+
         func checkNode(_ node: Node) {
-            let towards = edgesRemaining.filter({ endNode(for: $0) == node })
-            guard towards.isEmpty else {
+            guard innerIndegree(node) == 0 else {
                 return
             }
 
             queueNode(node)
         }
 
+        // Populate edges
+        for node in nodes {
+            nodeEdgeLookup[node] = self.allEdges(for: node)
+        }
+
         // Populate with all nodes with no incoming edges
-        for node in nodes where edges(towards: node).isEmpty {
+        for node in nodes where innerIndegree(node) == 0 {
             nextNodes.append(node)
         }
         nextNodes.sort(by: areInIncreasingOrder)
@@ -581,15 +602,15 @@ public extension DirectedGraphType {
             let node = nextNodes.removeFirst()
             result.append(node)
 
-            for edge in edgesRemaining where startNode(for: edge) == node {
-                edgesRemaining.remove(edge)
-                let end = endNode(for: edge)
+            for edge in innerEdgesFrom(node) {
+                innerEraseEdge(edge)
 
+                let end = endNode(for: edge)
                 checkNode(end)
             }
         }
 
-        if !edgesRemaining.isEmpty {
+        if nodeEdgeLookup.contains(where: { !$0.value.isEmpty }) {
             // Cycle found
             return nil
         }

@@ -14,6 +14,10 @@ class TestGraph {
         return node
     }
 
+    func addNodes(values: some Sequence<Int>) -> [Node] {
+        values.map(addNode)
+    }
+
     @discardableResult
     func addMutualEdges(from start: Node, to end: Node) -> [Edge] {
         return [

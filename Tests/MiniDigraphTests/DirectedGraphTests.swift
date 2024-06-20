@@ -3,6 +3,19 @@ import XCTest
 @testable import MiniDigraph
 
 class DirectedGraphTests: XCTestCase {
+    func testAllEdgesForNode() {
+        var sut = makeSut()
+        sut.addNode(0)
+        sut.addNode(1)
+        sut.addNode(2)
+        sut.addEdge(0 => 1)
+        sut.addEdge(1 => 2)
+
+        let result = sut.allEdges(for: 1)
+
+        XCTAssertEqual(result, [0 => 1, 1 => 2])
+    }
+
     func testStronglyConnectedSubgraph() {
         // 1 --> 2 --> 3 <-> 4
         // ^  _/ v     v    ^ v
