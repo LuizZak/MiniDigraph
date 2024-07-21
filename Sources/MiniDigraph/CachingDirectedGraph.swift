@@ -42,6 +42,14 @@ public struct CachingDirectedGraph<Node: Hashable, Edge: AbstractDirectedGraphEd
         _object.edgesFromNode[start]?.first(where: { $0.end == end })
     }
 
+    public func indegree(of node: Node) -> Int {
+        _object.edgesTowardsNode[node]?.count ?? 0
+    }
+
+    public func outdegree(of node: Node) -> Int {
+        _object.edgesFromNode[node]?.count ?? 0
+    }
+
     @usableFromInline
     internal final class _Cache {
         private(set) var nodes: Set<Node>

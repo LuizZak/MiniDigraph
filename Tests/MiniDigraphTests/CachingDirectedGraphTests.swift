@@ -3,6 +3,44 @@ import XCTest
 @testable import MiniDigraph
 
 class CachingDirectedGraphTests: XCTestCase {
+    func testIndegree() {
+        var sut = makeSut()
+        sut.addNode(1)
+        sut.addNode(2)
+        sut.addNode(3)
+        sut.addEdge(1 => 2)
+        sut.addEdge(2 => 3)
+
+        XCTAssertEqual(sut.indegree(of: 1), 0)
+        XCTAssertEqual(sut.indegree(of: 2), 1)
+        XCTAssertEqual(sut.indegree(of: 3), 1)
+
+        // Test that removal is appropriately cached
+        sut.removeNode(2)
+
+        XCTAssertEqual(sut.indegree(of: 1), 0)
+        XCTAssertEqual(sut.indegree(of: 3), 0)
+    }
+
+    func testOutdegree() {
+        var sut = makeSut()
+        sut.addNode(1)
+        sut.addNode(2)
+        sut.addNode(3)
+        sut.addEdge(1 => 2)
+        sut.addEdge(2 => 3)
+
+        XCTAssertEqual(sut.outdegree(of: 1), 1)
+        XCTAssertEqual(sut.outdegree(of: 2), 1)
+        XCTAssertEqual(sut.outdegree(of: 3), 0)
+
+        // Test that removal is appropriately cached
+        sut.removeNode(2)
+
+        XCTAssertEqual(sut.outdegree(of: 1), 0)
+        XCTAssertEqual(sut.outdegree(of: 3), 0)
+    }
+
     func testAddNode() {
         var sut = makeSut()
 
