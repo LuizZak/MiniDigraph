@@ -520,7 +520,7 @@ extension TestGraph: DirectedGraphType {
         edges.filter { $0.end == node }
     }
 
-    func edge(from start: Node, to end: Node) -> Edge? {
-        edges.first { $0.start == start && $0.end == end }
+    func edges(from start: Node, to end: Node) -> Set<Edge> {
+        edges.filter { $0.start == start && $0.end == end }
     }
 }

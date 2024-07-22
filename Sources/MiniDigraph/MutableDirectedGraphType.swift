@@ -47,8 +47,8 @@ public protocol MutableDirectedGraphType: DirectedGraphType {
     /// Removes a given sequence of nodes from this graph.
     mutating func removeNodes(_ nodesToRemove: some Sequence<Node>)
 
-    /// Removes an edge between two nodes from this graph.
-    mutating func removeEdge(from start: Node, to end: Node)
+    /// Removes all edges between two nodes from this graph.
+    mutating func removeEdges(from start: Node, to end: Node)
 
     /// Removes a given sequence of edges from this graph.
     mutating func removeEdges(_ edgesToRemove: some Sequence<Edge>)
@@ -111,8 +111,8 @@ extension MutableDirectedGraphType {
     }
 
     @inlinable
-    public mutating func removeEdge(from start: Node, to end: Node) {
-        if let edge = edge(from: start, to: end) {
+    public mutating func removeEdges(from start: Node, to end: Node) {
+        for edge in edges(from: start, to: end) {
             removeEdge(edge)
         }
     }

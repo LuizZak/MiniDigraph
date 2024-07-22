@@ -42,6 +42,10 @@ public struct CachingDirectedGraph<Node: Hashable, Edge: AbstractDirectedGraphEd
         _object.edgesFromNode[start]?.first(where: { $0.end == end })
     }
 
+    public func edges(from start: Node, to end: Node) -> Set<Edge> {
+        _object.edgesFromNode[start]?.filter({ $0.end == end }) ?? []
+    }
+
     public func indegree(of node: Node) -> Int {
         _object.edgesTowardsNode[node]?.count ?? 0
     }

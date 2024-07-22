@@ -33,16 +33,19 @@ public protocol DirectedGraphType {
     /// - precondition: `node` is a valid node within this graph.
     func edges(towards node: Node) -> Set<Edge>
 
-    /// Returns an existing edge between two nodes, or `nil`, if no edges between
-    /// them currently exist.
+    /// Returns a set of existing edges between two nodes, or `nil`, if no edges
+    /// between them currently exist.
     ///
     /// - precondition: `start` and `end` are valid nodes within this graph.
-    func edge(from start: Node, to end: Node) -> Edge?
+    func edges(from start: Node, to end: Node) -> Set<Edge>
 
     // MARK: Optional conformances
 
     /// Returns `true` if the given node is contained within this graph.
     func containsNode(_ node: Node) -> Bool
+
+    /// Returns `true` if the given edge is contained within this graph.
+    func containsEdge(_ edge: Edge) -> Bool
 
     /// Returns all ingoing and outgoing edges for a given directed graph node.
     ///
@@ -230,13 +233,18 @@ public extension DirectedGraphType {
     }
 
     @inlinable
+    func containsEdge(_ edge: Edge) -> Bool {
+        edges.contains(edge)
+    }
+
+    @inlinable
     func allEdges(for node: Node) -> Set<Edge> {
         edges(towards: node).union(edges(from: node))
     }
 
     @inlinable
     func areConnected(start: Node, end: Node) -> Bool {
-        edge(from: start, to: end) != nil
+        !edges(from: start, to: end).isEmpty
     }
 
     @inlinable
@@ -615,8 +623,8 @@ public extension DirectedGraphType where Self.Edge: AbstractDirectedGraphEdge, S
     }
 
     @inlinable
-    func edge(from start: Node, to end: Node) -> Edge? {
-        self.edges.first { $0.start == start && $0.end == end }
+    func edges(from start: Node, to end: Node) -> Set<Edge> {
+        self.edges.filter { $0.start == start && $0.end == end }
     }
 
     @inlinable

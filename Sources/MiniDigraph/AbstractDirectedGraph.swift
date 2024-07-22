@@ -48,8 +48,8 @@ extension AbstractDirectedGraph: DirectedGraphType {
     }
 
     @inlinable
-    public func edge(from start: Node, to end: Node) -> Edge? {
-        edges.first { $0.start == start && $0.end == end }
+    public func edges(from start: Node, to end: Node) -> Set<Edge> {
+        edges.filter { $0.start == start && $0.end == end }
     }
 }
 
