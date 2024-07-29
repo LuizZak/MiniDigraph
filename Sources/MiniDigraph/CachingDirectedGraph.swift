@@ -30,19 +30,19 @@ public struct CachingDirectedGraph<Node: Hashable, Edge: AbstractDirectedGraphEd
         _=ensuringUnique()
     }
 
-    public func edges(from node: Node) -> Set<Edge> {
-        _object.edgesFromNode[node, default: []]
+    public func edges(from node: Node) -> [Edge] {
+        Array(_object.edgesFromNode[node, default: []])
     }
 
-    public func edges(towards node: Node) -> Set<Edge> {
-        _object.edgesTowardsNode[node, default: []]
+    public func edges(towards node: Node) -> [Edge] {
+        Array(_object.edgesTowardsNode[node, default: []])
     }
 
     public func edge(from start: Node, to end: Node) -> Edge? {
         _object.edgesFromNode[start]?.first(where: { $0.end == end })
     }
 
-    public func edges(from start: Node, to end: Node) -> Set<Edge> {
+    public func edges(from start: Node, to end: Node) -> [Edge] {
         _object.edgesFromNode[start]?.filter({ $0.end == end }) ?? []
     }
 

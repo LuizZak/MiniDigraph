@@ -1,15 +1,26 @@
 /// A protocol for representing directed graphs
 public protocol DirectedGraphType {
-    associatedtype Node: Hashable
-    associatedtype Edge: DirectedGraphEdge
+    /// The type of collection containing the nodes of this graph.
+    associatedtype NodeCollection: Collection
+        where NodeCollection.Element: Hashable
+
+    /// The type of collection containing the edges of this graph.
+    associatedtype EdgeCollection: Collection
+        where EdgeCollection.Element: DirectedGraphEdge
+
+    /// Convenience for `Self.NodeCollection.Element`
+    typealias Node = NodeCollection.Element
+
+    /// Convenience for `Self.EdgeCollection.Element`
+    typealias Edge = EdgeCollection.Element
 
     /// Convenience typealias for a visit for visit methods in this directed graph.
     typealias VisitElement = DirectedGraphRecordingVisitElement<Edge, Node>
 
     /// Gets a set of all nodes in this directed graph.
-    var nodes: Set<Node> { get }
+    var nodes: NodeCollection { get }
     /// Gets a set of all edges in this directed graph.
-    var edges: Set<Edge> { get }
+    var edges: EdgeCollection { get }
 
     // MARK: Required conformances
 
@@ -26,18 +37,18 @@ public protocol DirectedGraphType {
     /// Returns all outgoing edges for a given directed graph node.
     ///
     /// - precondition: `node` is a valid node within this graph.
-    func edges(from node: Node) -> Set<Edge>
+    func edges(from node: Node) -> [Edge]
 
     /// Returns all ingoing edges for a given directed graph node.
     ///
     /// - precondition: `node` is a valid node within this graph.
-    func edges(towards node: Node) -> Set<Edge>
+    func edges(towards node: Node) -> [Edge]
 
     /// Returns a set of existing edges between two nodes, or `nil`, if no edges
     /// between them currently exist.
     ///
     /// - precondition: `start` and `end` are valid nodes within this graph.
-    func edges(from start: Node, to end: Node) -> Set<Edge>
+    func edges(from start: Node, to end: Node) -> [Edge]
 
     // MARK: Optional conformances
 
@@ -50,7 +61,7 @@ public protocol DirectedGraphType {
     /// Returns all ingoing and outgoing edges for a given directed graph node.
     ///
     /// - precondition: `node` is a valid node within this graph.
-    func allEdges(for node: Node) -> Set<Edge>
+    func allEdges(for node: Node) -> [Edge]
 
     /// Returns `true` if the two given nodes are connected with an edge.
     ///
@@ -61,19 +72,19 @@ public protocol DirectedGraphType {
     /// node.
     ///
     /// - precondition: `node` is a valid node within this graph.
-    func nodesConnected(from node: Node) -> Set<Node>
+    func nodesConnected(from node: Node) -> [Node]
 
     /// Returns all graph nodes that are connected towards a given directed graph
     /// node.
     ///
     /// - precondition: `node` is a valid node within this graph.
-    func nodesConnected(towards node: Node) -> Set<Node>
+    func nodesConnected(towards node: Node) -> [Node]
 
     /// Returns all graph nodes that are connected towards and from the given
     /// graph node.
     ///
     /// - precondition: `node` is a valid node within this graph.
-    func allNodesConnected(to node: Node) -> Set<Node>
+    func allNodesConnected(to node: Node) -> [Node]
 
     /// Returns the indegree of a given node, or the number of edges pointing
     /// towards that node.
@@ -238,8 +249,8 @@ public extension DirectedGraphType {
     }
 
     @inlinable
-    func allEdges(for node: Node) -> Set<Edge> {
-        edges(towards: node).union(edges(from: node))
+    func allEdges(for node: Node) -> [Edge] {
+        edges(towards: node) + edges(from: node)
     }
 
     @inlinable
@@ -248,18 +259,18 @@ public extension DirectedGraphType {
     }
 
     @inlinable
-    func nodesConnected(from node: Node) -> Set<Node> {
-        Set(edges(from: node).map(self.endNode(for:)))
+    func nodesConnected(from node: Node) -> [Node] {
+        edges(from: node).map(self.endNode(for:))
     }
 
     @inlinable
-    func nodesConnected(towards node: Node) -> Set<Node> {
-        Set(edges(towards: node).map(self.startNode(for:)))
+    func nodesConnected(towards node: Node) -> [Node] {
+        edges(towards: node).map(self.startNode(for:))
     }
 
     @inlinable
-    func allNodesConnected(to node: Node) -> Set<Node> {
-        nodesConnected(towards: node).union(nodesConnected(from: node))
+    func allNodesConnected(to node: Node) -> [Node] {
+        nodesConnected(towards: node) + nodesConnected(from: node)
     }
 
     @inlinable
@@ -485,7 +496,7 @@ public extension DirectedGraphType {
         var permanentMark: Set<Node> = []
         var temporaryMark: Set<Node> = []
 
-        var unmarkedNodes = nodes
+        var unmarkedNodes = Array(nodes)
         var list: [Node] = []
 
         func visit(_ node: Node) -> Bool {
@@ -506,7 +517,8 @@ public extension DirectedGraphType {
             return true
         }
 
-        while let node = unmarkedNodes.popFirst() {
+        while !unmarkedNodes.isEmpty {
+            let node = unmarkedNodes.removeFirst()
             if !visit(node) {
                 return nil
             }
@@ -571,7 +583,7 @@ public extension DirectedGraphType {
 
         // Populate edges
         for node in nodes {
-            nodeEdgeLookup[node] = self.allEdges(for: node)
+            nodeEdgeLookup[node] = Set(self.allEdges(for: node))
         }
 
         // Populate with all nodes with no incoming edges
@@ -613,17 +625,17 @@ public extension DirectedGraphType where Self.Edge: AbstractDirectedGraphEdge, S
     }
 
     @inlinable
-    func edges(from node: Node) -> Set<Edge> {
+    func edges(from node: Node) -> [Edge] {
         self.edges.filter { $0.start == node }
     }
 
     @inlinable
-    func edges(towards node: Node) -> Set<Edge> {
+    func edges(towards node: Node) -> [Edge] {
         self.edges.filter { $0.end == node }
     }
 
     @inlinable
-    func edges(from start: Node, to end: Node) -> Set<Edge> {
+    func edges(from start: Node, to end: Node) -> [Edge] {
         self.edges.filter { $0.start == start && $0.end == end }
     }
 

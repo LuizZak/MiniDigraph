@@ -3,8 +3,11 @@
 public struct AbstractDirectedGraph<Node, Edge>
     where Node: Hashable, Edge: AbstractDirectedGraphEdge, Edge.Node == Node
 {
-    internal(set) public var nodes: Set<Node>
-    internal(set) public var edges: Set<Edge>
+    public typealias NodeCollection = Set<Node>
+    public typealias EdgeCollection = Set<Edge>
+
+    internal(set) public var nodes: NodeCollection
+    internal(set) public var edges: EdgeCollection
 
     public init() {
         nodes = []
@@ -38,17 +41,17 @@ extension AbstractDirectedGraph: DirectedGraphType {
     }
 
     @inlinable
-    public func edges(from node: Node) -> Set<Edge> {
+    public func edges(from node: Node) -> [Edge] {
         edges.filter { $0.start == node }
     }
 
     @inlinable
-    public func edges(towards node: Node) -> Set<Edge> {
+    public func edges(towards node: Node) -> [Edge] {
         edges.filter { $0.end == node }
     }
 
     @inlinable
-    public func edges(from start: Node, to end: Node) -> Set<Edge> {
+    public func edges(from start: Node, to end: Node) -> [Edge] {
         edges.filter { $0.start == start && $0.end == end }
     }
 }
@@ -87,13 +90,13 @@ extension AbstractDirectedGraph: MutableSimpleEdgeDirectedGraphType where Edge: 
 
 public extension AbstractDirectedGraph {
     @inlinable
-    func allEdges(for node: Node) -> Set<Edge> {
+    func allEdges(for node: Node) -> [Edge] {
         assert(nodes.contains(node), "nodes.contains(node)")
         return edges.filter { $0.start == node || $0.end == node }
     }
 
     @inlinable
-    func nodesConnected(from node: Node) -> Set<Node> {
+    func nodesConnected(from node: Node) -> [Node] {
         assert(nodes.contains(node), "nodes.contains(node)")
         let nodes = edges.compactMap { edge in
             if edge.start == node {
@@ -102,11 +105,11 @@ public extension AbstractDirectedGraph {
                 nil
             }
         }
-        return Set(nodes)
+        return nodes
     }
 
     @inlinable
-    func nodesConnected(towards node: Node) -> Set<Node> {
+    func nodesConnected(towards node: Node) -> [Node] {
         assert(nodes.contains(node), "nodes.contains(node)")
         let nodes = edges.compactMap { edge in
             if edge.end == node {
@@ -115,11 +118,11 @@ public extension AbstractDirectedGraph {
                 nil
             }
         }
-        return Set(nodes)
+        return nodes
     }
 
     @inlinable
-    func allNodesConnected(to node: Node) -> Set<Node> {
+    func allNodesConnected(to node: Node) -> [Node] {
         assert(nodes.contains(node), "nodes.contains(node)")
         let nodes = edges.compactMap { edge in
             if edge.end == node {
@@ -130,7 +133,7 @@ public extension AbstractDirectedGraph {
                 nil
             }
         }
-        return Set(nodes)
+        return nodes
     }
 
     @inlinable

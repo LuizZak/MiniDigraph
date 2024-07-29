@@ -114,13 +114,13 @@ extension DirectedGraph: MutableDirectedGraphType {
 
 public extension DirectedGraph {
     @inlinable
-    func allEdges(for node: Node) -> Set<Edge> {
+    func allEdges(for node: Node) -> [Edge] {
         assert(nodes.contains(node), "nodes.contains(node)")
         return edges.filter { $0.start == node || $0.end == node }
     }
 
     @inlinable
-    func nodesConnected(from node: Node) -> Set<Node> {
+    func nodesConnected(from node: Node) -> [Node] {
         assert(nodes.contains(node), "nodes.contains(node)")
         let nodes = edges.compactMap { edge in
             if edge.start == node {
@@ -129,11 +129,11 @@ public extension DirectedGraph {
                 nil
             }
         }
-        return Set(nodes)
+        return nodes
     }
 
     @inlinable
-    func nodesConnected(towards node: Node) -> Set<Node> {
+    func nodesConnected(towards node: Node) -> [Node] {
         assert(nodes.contains(node), "nodes.contains(node)")
         let nodes = edges.compactMap { edge in
             if edge.end == node {
@@ -142,11 +142,11 @@ public extension DirectedGraph {
                 nil
             }
         }
-        return Set(nodes)
+        return nodes
     }
 
     @inlinable
-    func allNodesConnected(to node: Node) -> Set<Node> {
+    func allNodesConnected(to node: Node) -> [Node] {
         assert(nodes.contains(node), "nodes.contains(node)")
         let nodes = edges.compactMap { edge in
             if edge.end == node {
@@ -157,7 +157,7 @@ public extension DirectedGraph {
                 nil
             }
         }
-        return Set(nodes)
+        return nodes
     }
 
     @inlinable

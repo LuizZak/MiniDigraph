@@ -56,12 +56,12 @@ public protocol MutableDirectedGraphType: DirectedGraphType {
     /// Removes the entry edges from a given node.
     /// Returns the set of edges that where removed.
     @discardableResult
-    mutating func removeEntryEdges(towards node: Node) -> Set<Edge>
+    mutating func removeEntryEdges(towards node: Node) -> [Edge]
 
     /// Removes the exit edges from a given node.
     /// Returns the set of edges that where removed.
     @discardableResult
-    mutating func removeExitEdges(from node: Node) -> Set<Edge>
+    mutating func removeExitEdges(from node: Node) -> [Edge]
 }
 
 extension MutableDirectedGraphType {
@@ -126,7 +126,7 @@ extension MutableDirectedGraphType {
 
     @inlinable
     @discardableResult
-    public mutating func removeEntryEdges(towards node: Node) -> Set<Edge> {
+    public mutating func removeEntryEdges(towards node: Node) -> [Edge] {
         let connections = edges(towards: node)
         removeEdges(connections)
         return connections
@@ -134,7 +134,7 @@ extension MutableDirectedGraphType {
 
     @inlinable
     @discardableResult
-    public mutating func removeExitEdges(from node: Node) -> Set<Edge> {
+    public mutating func removeExitEdges(from node: Node) -> [Edge] {
         let connections = edges(from: node)
         removeEdges(connections)
         return connections

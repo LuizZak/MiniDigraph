@@ -13,7 +13,7 @@ class AbstractDirectedGraphTests: XCTestCase {
 
         let result = sut.allEdges(for: 1)
 
-        XCTAssertEqual(result, [
+        assertEqualUnordered(result, [
             .init(start: 0, end: 1),
             .init(start: 1, end: 2),
         ])

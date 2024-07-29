@@ -13,7 +13,7 @@ class DirectedGraphTests: XCTestCase {
 
         let result = sut.allEdges(for: 1)
 
-        XCTAssertEqual(result, [0 => 1, 1 => 2])
+        assertEqualUnordered(result, [0 => 1, 1 => 2])
     }
 
     func testStronglyConnectedSubgraph() {
@@ -41,13 +41,13 @@ class DirectedGraphTests: XCTestCase {
         let group3 = "3, 4, 8"
         let group4 = "9"
 
-        XCTAssertEqual(result.nodes, [
+        assertEqualUnordered(result.nodes, [
             group1,
             group2,
             group3,
             group4,
         ])
-        XCTAssertEqual(result.edges, [
+        assertEqualUnordered(result.edges, [
             group1 => group2,
             group1 => group3,
             group3 => group2,

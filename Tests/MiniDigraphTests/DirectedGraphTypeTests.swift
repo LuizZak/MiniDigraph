@@ -13,7 +13,7 @@ class DirectedGraphTypeTests: XCTestCase {
 
         let result = sut.allEdges(for: n1)
 
-        XCTAssertEqual(result, [e1, e2])
+        assertEqualUnordered(result, [e1, e2])
     }
 
     func testNodesConnectedFromNode() {
@@ -26,7 +26,7 @@ class DirectedGraphTypeTests: XCTestCase {
 
         let result = sut.nodesConnected(from: n1)
 
-        XCTAssertEqual(result, [n2, n3])
+        assertEqualUnordered(result, [n2, n3])
     }
 
     func testNodesConnectedTowardsNode() {
@@ -52,7 +52,7 @@ class DirectedGraphTypeTests: XCTestCase {
 
         let result = sut.allNodesConnected(to: n2)
 
-        XCTAssertEqual(result, [n1, n3])
+        assertEqualUnordered(result, [n1, n3])
     }
 
     func testIndegree() {
@@ -512,15 +512,15 @@ extension TestGraph: DirectedGraphType {
         edge.end
     }
 
-    func edges(from node: Node) -> Set<Edge> {
+    func edges(from node: Node) -> [Edge] {
         edges.filter { $0.start == node }
     }
 
-    func edges(towards node: Node) -> Set<Edge> {
+    func edges(towards node: Node) -> [Edge] {
         edges.filter { $0.end == node }
     }
 
-    func edges(from start: Node, to end: Node) -> Set<Edge> {
+    func edges(from start: Node, to end: Node) -> [Edge] {
         edges.filter { $0.start == start && $0.end == end }
     }
 }

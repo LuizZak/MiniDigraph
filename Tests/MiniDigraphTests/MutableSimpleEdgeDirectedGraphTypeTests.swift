@@ -17,14 +17,14 @@ class MutableSimpleEdgeDirectedGraphTypeTests: XCTestCase {
 
         let result = sut.redirectEntries(for: n3, to: n5)
 
-        XCTAssertEqual(result, [
+        assertEqualUnordered(result, [
             n1 => n5,
             n2 => n5,
         ])
-        XCTAssertEqual(sut.nodes, [
+        assertEqualUnordered(sut.nodes, [
             n1, n2, n3, n4, n5,
         ])
-        XCTAssertEqual(sut.edges, [
+        assertEqualUnordered(sut.edges, [
             n1 => n2,
             n1 => n5,
             n2 => n5,
@@ -46,14 +46,14 @@ class MutableSimpleEdgeDirectedGraphTypeTests: XCTestCase {
 
         let result = sut.redirectExits(for: n2, to: n0)
 
-        XCTAssertEqual(result, [
+        assertEqualUnordered(result, [
             n0 => n3,
             n0 => n4,
         ])
-        XCTAssertEqual(sut.nodes, [
+        assertEqualUnordered(sut.nodes, [
             n0, n1, n2, n3, n4,
         ])
-        XCTAssertEqual(sut.edges, [
+        assertEqualUnordered(sut.edges, [
             n0 => n3,
             n0 => n4,
             n1 => n2,

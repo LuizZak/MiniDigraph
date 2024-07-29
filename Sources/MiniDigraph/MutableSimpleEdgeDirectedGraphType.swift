@@ -11,7 +11,7 @@ public protocol MutableSimpleEdgeDirectedGraphType: MutableDirectedGraphType whe
     ///
     /// The return list contains the new edges that where created.
     @discardableResult
-    mutating func redirectEntries(for node: Node, to other: Node) -> Set<Edge>
+    mutating func redirectEntries(for node: Node, to other: Node) -> [Edge]
 
     /// Moves the exit edges from a given node to a target node.
     ///
@@ -19,7 +19,7 @@ public protocol MutableSimpleEdgeDirectedGraphType: MutableDirectedGraphType whe
     ///
     /// The return list contains the new edges that where created.
     @discardableResult
-    mutating func redirectExits(for node: Node, to other: Node) -> Set<Edge>
+    mutating func redirectExits(for node: Node, to other: Node) -> [Edge]
 
     /// Prepends a node before a suffix node, redirecting the entries to the
     /// suffix node to the prefix node, and adding an edge from the prefix to the
@@ -39,8 +39,8 @@ public extension MutableSimpleEdgeDirectedGraphType {
 
     @inlinable
     @discardableResult
-    mutating func redirectEntries(for node: Node, to other: Node) -> Set<Edge> {
-        var result: Set<Edge> = []
+    mutating func redirectEntries(for node: Node, to other: Node) -> [Edge] {
+        var result: [Edge] = []
 
         for connection in removeEntryEdges(towards: node) {
             guard !areConnected(start: startNode(for: connection), end: other) else {
@@ -49,7 +49,7 @@ public extension MutableSimpleEdgeDirectedGraphType {
 
             let edge = addEdge(from: startNode(for: connection), to: other)
 
-            result.insert(edge)
+            result.append(edge)
         }
 
         return result
@@ -57,8 +57,8 @@ public extension MutableSimpleEdgeDirectedGraphType {
 
     @inlinable
     @discardableResult
-    mutating func redirectExits(for node: Node, to other: Node) -> Set<Edge> {
-        var result: Set<Edge> = []
+    mutating func redirectExits(for node: Node, to other: Node) -> [Edge] {
+        var result: [Edge] = []
 
         for connection in removeExitEdges(from: node) {
             guard !areConnected(start: other, end: endNode(for: connection)) else {
@@ -67,7 +67,7 @@ public extension MutableSimpleEdgeDirectedGraphType {
 
             let edge = addEdge(from: other, to: endNode(for: connection))
 
-            result.insert(edge)
+            result.append(edge)
         }
 
         return result
