@@ -1,96 +1,78 @@
-/// A copy-on-write backed directed graph that performs internal caching of edges
-/// across nodes to improve performance of edge lookups and related operations.
+/// A copy-on-write backing directed graph cache that performs internal caching
+/// of expensing lookups to improve performance of edge lookups and related
+/// operations.
 ///
+/// - note: Using reference-types as inputs for caching may result in incorrect
+/// behavior when copies of `CachingDirectedGraph` are created from the graph
+/// type.
 /// - note: Not thread-safe.
-public struct CachingDirectedGraph<Node: Hashable, Edge: AbstractDirectedGraphEdge>: DirectedGraphType where Edge.Node == Node {
+public struct CachingDirectedGraph<Graph: DirectedGraphType>
+    where
+        Graph.Edge: AbstractDirectedGraphEdge,
+        Graph.Edge.Node == Graph.NodeCollection.Element
+{
+    public typealias NodeCollection = Graph.NodeCollection
+    public typealias EdgeCollection = Graph.EdgeCollection
+
     @usableFromInline
-    internal var _object: _Cache
+    var cache: Cache
 
-    public var nodes: Set<Node> {
-        _object.nodes
+    @usableFromInline
+    var graph: Graph {
+        cache.graph
     }
 
-    public var edges: Set<Edge> {
-        _object.allEdges
+    /// Initializes this caching graph with a given input graph type.
+    public init(graph: Graph) {
+        self.cache = .init(graph: graph)
     }
 
-    public init() {
-        _object = _Cache()
-    }
-
-    mutating func ensuringUnique() -> _Cache {
-        if !isKnownUniquelyReferenced(&_object) {
-            _object = _object.copy()
-        }
-
-        return _object
+    /// Initializes this caching graph with a given input graph type.
+    public init(graph: CachingDirectedGraph<Graph>) {
+        self.cache = graph.cache.copy()
     }
 
     mutating func ensureUnique() {
-        _=ensuringUnique()
-    }
-
-    public func edges(from node: Node) -> [Edge] {
-        Array(_object.edgesFromNode[node, default: []])
-    }
-
-    public func edges(towards node: Node) -> [Edge] {
-        Array(_object.edgesTowardsNode[node, default: []])
-    }
-
-    public func edge(from start: Node, to end: Node) -> Edge? {
-        _object.edgesFromNode[start]?.first(where: { $0.end == end })
-    }
-
-    public func edges(from start: Node, to end: Node) -> [Edge] {
-        _object.edgesFromNode[start]?.filter({ $0.end == end }) ?? []
-    }
-
-    public func indegree(of node: Node) -> Int {
-        _object.edgesTowardsNode[node]?.count ?? 0
-    }
-
-    public func outdegree(of node: Node) -> Int {
-        _object.edgesFromNode[node]?.count ?? 0
+        if !isKnownUniquelyReferenced(&cache) {
+            cache = cache.copy()
+        }
     }
 
     @usableFromInline
-    internal final class _Cache {
-        private(set) var nodes: Set<Node>
-        private(set) var allEdges: Set<Edge>
-        private(set) var edgesFromNode: [Node: Set<Edge>]
-        private(set) var edgesTowardsNode: [Node: Set<Edge>]
+    class Cache {
+        typealias Node = Graph.Node
+        typealias Edge = Graph.Edge
 
         @usableFromInline
-        convenience init() {
-            self.init(
-                nodes: [],
-                allEdges: [],
-                edgesFromNode: [:],
-                edgesTowardsNode: [:]
-            )
+        var graph: Graph
+
+        @usableFromInline
+        var nodes: Graph.NodeCollection {
+            graph.nodes
+        }
+        @usableFromInline
+        var edges: Graph.EdgeCollection {
+            graph.edges
         }
 
-        @usableFromInline
+        var edgesTowardsNode: [Node: Set<Edge>]
+        var edgesFromNode: [Node: Set<Edge>]
+
         init(
-            nodes: Set<Node>,
-            allEdges: Set<Edge>,
-            edgesFromNode: [Node: Set<Edge>],
-            edgesTowardsNode: [Node: Set<Edge>]
+            graph: Graph,
+            edgesTowardsNode: [Node: Set<Edge>] = [:],
+            edgesFromNode: [Node: Set<Edge>] = [:]
         ) {
-            self.nodes = nodes
-            self.allEdges = allEdges
-            self.edgesFromNode = edgesFromNode
+            self.graph = graph
             self.edgesTowardsNode = edgesTowardsNode
+            self.edgesFromNode = edgesFromNode
         }
 
-        @usableFromInline
-        func copy() -> _Cache {
-            return _Cache(
-                nodes: nodes,
-                allEdges: allEdges,
-                edgesFromNode: edgesFromNode,
-                edgesTowardsNode: edgesTowardsNode
+        func copy() -> Cache {
+            return .init(
+                graph: graph,
+                edgesTowardsNode: edgesTowardsNode,
+                edgesFromNode: edgesFromNode
             )
         }
 
@@ -113,103 +95,149 @@ public struct CachingDirectedGraph<Node: Hashable, Edge: AbstractDirectedGraphEd
             precondition(nodes.contains(node))
             edgesTowardsNode[node, default: []].remove(edge)
         }
+    }
+}
 
-        func _addNode(_ node: Node) {
-            if nodes.insert(node).inserted {
-                edgesFromNode[node] = []
-                edgesTowardsNode[node] = []
-            }
+extension CachingDirectedGraph.Cache where Graph: MutableDirectedGraphType {
+    func _addNode(_ node: Node) {
+        graph.addNode(node)
+        edgesFromNode[node] = []
+        edgesTowardsNode[node] = []
+    }
+
+    func _removeNode(_ node: Node) {
+        guard nodes.contains(node) else {
+            preconditionFailure("Attempted to remove a node that was not part of this graph: \(node)")
         }
 
-        func _removeNode(_ node: Node) {
-            guard nodes.contains(node) else {
-                preconditionFailure("Attempted to remove a node that was not part of this graph: \(node)")
-            }
+        for edge in edgesFromNode[node, default: []] {
+            _removeEdge(edge)
+        }
+        for edge in edgesTowardsNode[node, default: []] {
+            _removeEdge(edge)
+        }
 
-            for edge in edgesFromNode[node, default: []] {
-                _removeEdge(edge)
-            }
-            for edge in edgesTowardsNode[node, default: []] {
-                _removeEdge(edge)
-            }
+        edgesFromNode.removeValue(forKey: node)
+        edgesTowardsNode.removeValue(forKey: node)
+        graph.removeNode(node)
+    }
+
+    func _removeNodes(_ nodesToRemove: some Collection<Node>) {
+        guard nodesToRemove.allSatisfy(nodes.contains(_:)) else {
+            preconditionFailure("Attempted to remove one or more nodes that were not part of this graph: \(nodesToRemove)")
+        }
+
+        for node in nodesToRemove {
+            let edgesFrom = edgesFromNode[node, default: []]
+            let edgesTo = edgesTowardsNode[node, default: []]
+
+            graph.removeEdges(edgesFrom)
+            graph.removeEdges(edgesTo)
 
             edgesFromNode.removeValue(forKey: node)
             edgesTowardsNode.removeValue(forKey: node)
-            nodes.remove(node)
+
+            for edgeFrom in edgesFrom {
+                edgesTowardsNode[edgeFrom.end]?.remove(edgeFrom)
+            }
+            for edgeTo in edgesTo {
+                edgesFromNode[edgeTo.start]?.remove(edgeTo)
+            }
         }
 
-        func _removeNodes(_ nodesToRemove: some Collection<Node>) {
-            guard nodesToRemove.allSatisfy(nodes.contains(_:)) else {
-                preconditionFailure("Attempted to remove one or more nodes that were not part of this graph: \(nodesToRemove)")
-            }
+        graph.removeNodes(nodesToRemove)
+    }
 
-            for node in nodesToRemove {
-                let edgesFrom = edgesFromNode[node, default: []]
-                let edgesTo = edgesTowardsNode[node, default: []]
+    func _addEdge(_ edge: Edge) -> Edge {
+        graph.addEdge(edge)
 
-                allEdges.subtract(edgesFrom)
-                allEdges.subtract(edgesTo)
+        _addFromEdge(edge.start, edge)
+        _addTowardsEdge(edge.end, edge)
 
-                edgesFromNode.removeValue(forKey: node)
-                edgesTowardsNode.removeValue(forKey: node)
+        return edge
+    }
 
-                for edgeFrom in edgesFrom {
-                    edgesTowardsNode[edgeFrom.end]?.remove(edgeFrom)
-                }
-                for edgeTo in edgesTo {
-                    edgesFromNode[edgeTo.start]?.remove(edgeTo)
-                }
-            }
-
-            nodes.subtract(nodesToRemove)
+    func _removeEdge(_ edge: Edge) {
+        guard graph.containsEdge(edge) else {
+            preconditionFailure("Attempted to remove an edge that was not part of this graph: \(edge)")
         }
 
-        func _addEdge(_ edge: Edge) -> Edge {
-            let (inserted, existing) = allEdges.insert(edge)
-            guard inserted else {
-                return existing
-            }
+        graph.removeEdge(edge)
+        _removeFromEdge(edge.start, edge)
+        _removeTowardsEdge(edge.end, edge)
+    }
 
-            _addFromEdge(edge.start, edge)
-            _addTowardsEdge(edge.end, edge)
-
-            return edge
-        }
-
-        func _removeEdge(_ edge: Edge) {
-            guard allEdges.remove(edge) != nil else {
-                preconditionFailure("Attempted to remove an edge that was not part of this graph: \(edge)")
-            }
-
-            _removeFromEdge(edge.start, edge)
-            _removeTowardsEdge(edge.end, edge)
+    func _removeEdges(_ edges: some Sequence<Edge>) {
+        for edge in edges {
+            _removeEdge(edge)
         }
     }
 }
 
-extension CachingDirectedGraph: MutableDirectedGraphType {
+extension CachingDirectedGraph: DirectedGraphType {
+    public var nodes: NodeCollection {
+        graph.nodes
+    }
+    public var edges: EdgeCollection {
+        graph.edges
+    }
+
+    public func startNode(for edge: Edge) -> Node {
+        edge.start
+    }
+
+    public func endNode(for edge: Edge) -> Node {
+        edge.end
+    }
+
+    public func edges(from node: Node) -> [Edge] {
+        Array(cache.edgesFromNode[node, default: []])
+    }
+
+    public func edges(towards node: Node) -> [Edge] {
+        Array(cache.edgesTowardsNode[node, default: []])
+    }
+
+    public func edges(from start: Node, to end: Node) -> [Edge] {
+        cache.edgesFromNode[start]?.filter({ $0.end == end }) ?? []
+    }
+}
+
+extension CachingDirectedGraph: MutableDirectedGraphType where Graph: MutableDirectedGraphType {
+    public init() {
+        self.cache = .init(graph: Graph())
+    }
+
     public mutating func addNode(_ node: Node) {
-        ensuringUnique()._addNode(node)
+        ensureUnique()
+        self.cache._addNode(node)
     }
 
     public mutating func removeNode(_ node: Node) {
-        ensuringUnique()._removeNode(node)
+        ensureUnique()
+        self.cache._removeNode(node)
     }
 
     public mutating func removeNodes(_ nodesToRemove: some Sequence<Node>) {
-        ensuringUnique()._removeNodes(Array(nodesToRemove))
+        ensureUnique()
+        self.cache._removeNodes(Array(nodesToRemove))
     }
 
     @discardableResult
     public mutating func addEdge(_ edge: Edge) -> Edge {
-        ensuringUnique()._addEdge(edge)
+        ensureUnique()
+        return self.cache._addEdge(edge)
     }
 
     public mutating func removeEdge(_ edge: Edge) {
-        ensuringUnique()._removeEdge(edge)
+        ensureUnique()
+        self.cache._removeEdge(edge)
+    }
+
+    public mutating func removeEdges(_ edgesToRemove: some Sequence<Edge>) {
+        ensureUnique()
+        self.cache._removeEdges(edgesToRemove)
     }
 }
 
-extension CachingDirectedGraph: MutableSimpleEdgeDirectedGraphType
-    where Edge: SimpleDirectedGraphEdge {
-}
+extension CachingDirectedGraph: MutableSimpleEdgeDirectedGraphType where Graph: MutableSimpleEdgeDirectedGraphType { }

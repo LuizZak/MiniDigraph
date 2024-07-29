@@ -288,8 +288,8 @@ class CachingDirectedGraphTests: XCTestCase {
         sut.removeNodes(nodesToRemove)
 
         XCTAssertEqual(sut.edges, [])
-        XCTAssertTrue(sut._object.edgesFromNode.allSatisfy({ $0.value.isEmpty }))
-        XCTAssertTrue(sut._object.edgesTowardsNode.allSatisfy({ $0.value.isEmpty }))
+        XCTAssertTrue(sut.cache.edgesFromNode.allSatisfy({ $0.value.isEmpty }))
+        XCTAssertTrue(sut.cache.edgesTowardsNode.allSatisfy({ $0.value.isEmpty }))
     }
 
     func testPerformance_removeNodes_parallel() {
@@ -310,13 +310,13 @@ class CachingDirectedGraphTests: XCTestCase {
         sut.removeNodes(nodesToRemove)
 
         XCTAssertEqual(sut.edges, [])
-        XCTAssertTrue(sut._object.edgesFromNode.allSatisfy({ $0.value.isEmpty }))
-        XCTAssertTrue(sut._object.edgesTowardsNode.allSatisfy({ $0.value.isEmpty }))
+        XCTAssertTrue(sut.cache.edgesFromNode.allSatisfy({ $0.value.isEmpty }))
+        XCTAssertTrue(sut.cache.edgesTowardsNode.allSatisfy({ $0.value.isEmpty }))
     }
 }
 
 // MARK: - Test internals
 
-private func makeSut() -> CachingDirectedGraph<Int, TestEdge<Int>> {
+private func makeSut() -> CachingDirectedGraph<TestIntGraph> {
     return .init()
 }
