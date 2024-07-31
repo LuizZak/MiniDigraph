@@ -100,6 +100,10 @@ public struct CachingDirectedGraph<Graph: DirectedGraphType>
 
 extension CachingDirectedGraph.Cache where Graph: MutableDirectedGraphType {
     func _addNode(_ node: Node) {
+        guard !graph.containsNode(node) else {
+            return
+        }
+
         graph.addNode(node)
         edgesFromNode[node] = []
         edgesTowardsNode[node] = []
@@ -200,6 +204,14 @@ extension CachingDirectedGraph: DirectedGraphType {
 
     public func edges(from start: Node, to end: Node) -> [Edge] {
         cache.edgesFromNode[start]?.filter({ $0.end == end }) ?? []
+    }
+
+    public func indegree(of node: Node) -> Int {
+        cache.edgesTowardsNode[node]?.count ?? 0
+    }
+
+    public func outdegree(of node: Node) -> Int {
+        cache.edgesFromNode[node]?.count ?? 0
     }
 }
 
