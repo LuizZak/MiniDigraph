@@ -304,6 +304,22 @@ class CachingDirectedGraphTests: XCTestCase {
         }
     }
 
+    func testPerformance_breadthFirstVisit_node_sequential() {
+        let nodeCount = 10_000
+        var sut = makeSut()
+        let start = 0
+        for n in 0..<nodeCount {
+            sut.addNode(n)
+        }
+        for n in 0..<(nodeCount - 1) {
+            sut.addEdge(from: n, to: n + 1)
+        }
+
+        sut.breadthFirstVisit(start: start) { visit in
+            return true
+        }
+    }
+
     func testPerformance_depthFirstVisit_sequential() {
         let nodeCount = 10_000
         var sut = makeSut()
