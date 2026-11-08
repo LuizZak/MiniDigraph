@@ -31,7 +31,7 @@ class DirectedGraphTests: XCTestCase {
             6 => 7,
             7 => 6,
             8 => 4, 8 => 7, 8 => 9
-        ])
+        ] as [DirectedGraph<Int>.Edge])
 
         let result = sut.stronglyConnectedSubgraph { component in
             component.sorted().map(\.description).joined(separator: ", ")

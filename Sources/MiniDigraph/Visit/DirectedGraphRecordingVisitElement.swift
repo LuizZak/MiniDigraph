@@ -62,6 +62,8 @@ public enum DirectedGraphRecordingVisitElement<E: DirectedGraphEdge, N: Hashable
     }
 }
 
+extension DirectedGraphRecordingVisitElement: Sendable where E: Sendable, N: Sendable { }
+
 extension DirectedGraphRecordingVisitElement: DirectedGraphVisitElementType {
     public typealias Node = N
     public typealias Edge = E

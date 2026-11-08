@@ -1,4 +1,4 @@
-// swift-tools-version: 5.9
+// swift-tools-version: 6.2
 import PackageDescription
 
 let package = Package(
@@ -17,5 +17,8 @@ let package = Package(
             name: "MiniDigraphTests",
             dependencies: ["MiniDigraph"]
         ),
+    ],
+    swiftLanguageModes: [
+        .v6,
     ]
 )

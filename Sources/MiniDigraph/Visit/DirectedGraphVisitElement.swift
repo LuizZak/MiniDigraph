@@ -28,6 +28,8 @@ public enum DirectedGraphVisitElement<E: DirectedGraphEdge, N: Hashable>: Hashab
     }
 }
 
+extension DirectedGraphVisitElement: Sendable where E: Sendable, N: Sendable { }
+
 extension DirectedGraphVisitElement: DirectedGraphVisitElementType {
     public typealias Node = N
     public typealias Edge = E

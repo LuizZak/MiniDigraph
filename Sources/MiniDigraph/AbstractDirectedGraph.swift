@@ -25,6 +25,7 @@ public struct AbstractDirectedGraph<Node, Edge>
     }
 }
 
+extension AbstractDirectedGraph: Sendable where Node: Sendable, Edge: Sendable { }
 extension AbstractDirectedGraph: Equatable { }
 
 // MARK: - Required conformances

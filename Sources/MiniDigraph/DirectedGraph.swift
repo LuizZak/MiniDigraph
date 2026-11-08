@@ -31,6 +31,8 @@ public struct DirectedGraph<Node> where Node: Hashable {
     }
 }
 
+extension DirectedGraph: Sendable where Node: Sendable, Edge: Sendable { }
+extension DirectedGraph.Edge: Sendable where Node: Sendable { }
 extension DirectedGraph: Equatable { }
 extension DirectedGraph.Edge: CustomStringConvertible where DirectedGraph.Node: CustomStringConvertible {
     public var description: String {
