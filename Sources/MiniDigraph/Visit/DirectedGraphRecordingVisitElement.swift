@@ -60,6 +60,32 @@ public enum DirectedGraphRecordingVisitElement<E: DirectedGraphEdge, N: Hashable
             return 1 + from.length
         }
     }
+
+    /// Returns `true` if a given node is referenced within this visit result.
+    ///
+    /// Check is done recursively up to the start visit entry.
+    public func containsNode(_ node: Node) -> Bool {
+        switch self {
+        case .start(let n):
+            return n == node
+
+        case .edge(_, let inner, let n):
+            return n == node || inner.containsNode(node)
+        }
+    }
+
+    /// Returns `true` if a given edge is referenced within this visit result.
+    ///
+    /// Check is done recursively up to the start visit entry.
+    public func containsEdge(_ edge: Edge) -> Bool {
+        switch self {
+        case .start:
+            return false
+
+        case .edge(let e, let inner, _):
+            return e == edge || inner.containsEdge(edge)
+        }
+    }
 }
 
 extension DirectedGraphRecordingVisitElement: Sendable where E: Sendable, N: Sendable { }
