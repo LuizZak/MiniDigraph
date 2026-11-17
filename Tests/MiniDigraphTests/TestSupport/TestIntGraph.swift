@@ -9,7 +9,7 @@ extension TestIntGraph: DirectedGraphType {
 }
 
 /// A basic test edge type.
-struct TestEdge<Node: Hashable>: SimpleDirectedGraphEdge, CustomStringConvertible {
+struct TestEdge<Node: Hashable>: AbstractDirectedGraphEdge, CustomStringConvertible {
     var start: Node
     var end: Node
 

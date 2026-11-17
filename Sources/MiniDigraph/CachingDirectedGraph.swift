@@ -93,11 +93,3 @@ extension CachingDirectedGraph: DirectedGraphType {
         cache.edgesFromNode[start]?.filter({ $0.end == end }) ?? []
     }
 }
-
-extension CachingDirectedGraph: MutableDirectedGraphType where Graph: MutableDirectedGraphType {
-    public init() {
-        self.cache = .init(graph: Graph())
-    }
-}
-
-extension CachingDirectedGraph: MutableSimpleEdgeDirectedGraphType where Graph: MutableSimpleEdgeDirectedGraphType { }
