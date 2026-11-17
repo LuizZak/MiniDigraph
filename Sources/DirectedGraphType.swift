@@ -27,7 +27,6 @@ public extension DirectedGraphType {
         _=visited
     }
 
-    @inlinable
     func breadthFirstVisit(start: Node, _ visitor: (DirectedGraphRecordingVisitElement<Edge, Node>) -> Bool) {
         breadthFirstVisit(start: DirectedGraphRecordingVisitElement<Edge, Node>.start(start))
     }
