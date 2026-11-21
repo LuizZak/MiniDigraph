@@ -481,16 +481,6 @@ public extension DirectedGraphType {
         return result
     }
 
-    /// Returns a list which represents the [topologically sorted] nodes of this
-    /// graph.
-    ///
-    /// Returns nil, in case it cannot be topologically sorted, when e.g. any
-    /// cycles are found.
-    ///
-    /// - Returns: A list of the nodes from this graph, topologically sorted, or
-    /// `nil`, in case it cannot be sorted.
-    ///
-    /// [topologically sorted]: https://en.wikipedia.org/wiki/Topological_sorting
     @inlinable
     func topologicalSorted() -> [Node]? {
         var permanentMark: Set<Node> = []
@@ -527,18 +517,6 @@ public extension DirectedGraphType {
         return list
     }
 
-    /// Returns a list which represents the [topologically sorted] nodes of this
-    /// graph. If two or more nodes can be placed in the same position in the
-    /// resulting array, an ordering callback `areInIncreasingOrder` is used to
-    /// alter the order of the results.
-    ///
-    /// Returns nil, in case it cannot be topologically sorted, when e.g. any
-    /// cycles are found.
-    ///
-    /// - Returns: A list of the nodes from this graph, topologically sorted, or
-    /// `nil`, in case it cannot be sorted.
-    ///
-    /// [topologically sorted]: https://en.wikipedia.org/wiki/Topological_sorting
     @inlinable
     func topologicalSorted(breakTiesWith areInIncreasingOrder: (Node, Node) -> Bool) -> [Node]? {
         var result: [Node] = []
